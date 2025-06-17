@@ -6,7 +6,7 @@ This is the main file
 #include <stdio.h>
 
 #include "synth.h"
-#include "utils.h"
+#include "backend/utils.h"
 
 
 int main(void) {
