@@ -22,7 +22,8 @@ typedef struct {
     int amplitude;
     int phase;
     wave_t wave_type;
-} SynthContext; // this is under the hood, affecting the sound output
+    Biquad *filter;
+} SynthContext;
 
 typedef int16_t* (*wave_generator)(SynthContext *ctx, int num_samples);
 
