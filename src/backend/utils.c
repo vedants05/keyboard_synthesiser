@@ -19,6 +19,10 @@ int initialise_sdl() {
 }
 
 int run_synth(bool *running, SDL_Event *event) {
+    if (!*running) {
+        return 0;
+    }
+
     printf("Creating window...\n");
     SDL_Window *window = SDL_CreateWindow(
         "Keyboard Test - CLICK HERE FIRST", 
@@ -31,12 +35,12 @@ int run_synth(bool *running, SDL_Event *event) {
         return 1;
     }
     
-    // Initialise renderer
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
-    if (!renderer) {
-        fprintf(stderr, "Renderer creation failed %s\n", SDL_GetError());
-        return 1;
-    }
+    // // Initialise renderer
+    // SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
+    // if (!renderer) {
+    //     fprintf(stderr, "Renderer creation failed %s\n", SDL_GetError());
+    //     return 1;
+    // }
 
 
     // Initialise audio
@@ -45,9 +49,22 @@ int run_synth(bool *running, SDL_Event *event) {
         fprintf(stderr, "Failed to allocate synth context\n");
         return 1;
     } 
-    SDL_AudioSpec *spec = {0}; // Zero
-    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-            spec, synth_callback, ctx);
+
+
+    ctx->sample_rate = 48000;
+    ctx->frequency = 440.0;
+    ctx->amplitude = 3000;
+    ctx->phase = 0;
+    ctx->wave_type = SINE;
+
+    SDL_AudioSpec spec = {0}; // Zero
+
+    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
+        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+        &spec, 
+        synth_callback, 
+        ctx
+    );
 
     
     printf("\n=== IMPORTANT ===\n");
@@ -59,23 +76,14 @@ int run_synth(bool *running, SDL_Event *event) {
 
     while (*running) {
         while (SDL_PollEvent(event)) {
-            // functionality will go in here
-
-
-
-            // TODO: Fix this bit
-            if (renderer) {
-                SDL_SetRenderDrawColor(renderer, 0, 100, 200, 255);
-                SDL_RenderClear(renderer);
-                SDL_RenderPresent(renderer);
-            }
-            
+            printf("The program can run\n");
+            *running = false;
             SDL_Delay(16);
         }
     }
 
 
-    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_DestroyAudioStream(stream);
     SDL_Quit();
 }

@@ -2,8 +2,17 @@
 #define TYPES_H
 
 #include <SDL3/SDL.h>
+#include "filters.h"
 
 typedef enum { SINE, SQUARE, SAW } wave_t;
+
+typedef struct {
+    wave_t wave_type;
+    int amplitude;
+    FilterType filter_type;
+    float cutoff;
+    float resonance;
+} user_state_t; // this is directly affected by the user changing stuff
 
 typedef struct {
     SDL_AudioFormat format;
@@ -13,10 +22,8 @@ typedef struct {
     int amplitude;
     int phase;
     wave_t wave_type;
-}
-SynthContext;
+} SynthContext; // this is under the hood, affecting the sound output
 
 typedef int16_t* (*wave_generator)(SynthContext *ctx, int num_samples);
-
 
 #endif
