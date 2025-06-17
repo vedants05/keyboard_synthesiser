@@ -1,0 +1,25 @@
+# Build directories
+build/
+
+# in case any binaries or executables end up at the top level
+*.exe
+*.out
+*.o
+*.obj
+
+# In ase any of these CMake files end up at the top level
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# IDE stuff
+.idea/
+.vscode/
+
+# Swap files
+*.swp
+
+# OS cache files
+.DS_Store
+Thumbs.db

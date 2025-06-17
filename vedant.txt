@@ -1,0 +1,46 @@
+Could you try and implement the keyboard?
+
+Like a normal looking keyboard which shows when you have pressed it, like becomes darker or 
+something.
+
+Also show that how it links to the computer keyboard, like saying
+a=G
+w=G#
+s=A
+e=A#
+d=B
+f=C
+t=C#
+g=D
+y=D#
+h=E
+j=F
+i=F#
+k=G
+o=G#
+l=A
+esc=Exit
+
+We could also link some keys to select buttons asw
+
+Don't worry about linking it to computer keyboard presses, I will do that. 
+Just focus on creating the UI and getting it to run
+
+Create a file called test_ui.c in the test folder and work in there to get the ui working.
+We'll move everything to the src folder to link it up later. 
+
+This bit is copy pasted from Charles's thing: 
+
+Don’t worry about linking these buttons to the app, I’ll do that. Just make them control 
+a bunch of variables, and make sure using the buttons/knobs  adjusts those variables. I 
+will create a state struct at some point
+
+I am using SDL3. I’ve heard it’s kind of peak to make a GUI with it, since you need to draw 
+all the buttons and stuff yourself through code. But it defo looks doable. However idk how 
+hard it is to add an external library on top of sdl3. Another option is to use a totally 
+different library for the GUI and link the inputs to that. 
+
+But yeah, let me know how you are planning on implementing the UI.
+
+Let me know if you have any questions and what you two decide. Also tell me if you think we 
+should do something completely differently.
