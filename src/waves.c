@@ -1,8 +1,13 @@
 #include "waves.h"
 #include "audio.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 
 int16_t *generate_sine(SynthContext *ctx, int num_samples) {
