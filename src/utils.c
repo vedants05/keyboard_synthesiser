@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <stdlib.h>
 #include "audio.h"
+#include <stdio.h>
 
 int initialise_sdl() {
     

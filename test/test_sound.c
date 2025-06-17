@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #define TONE_FREQ 440.0
 #define AMPLITUDE 28000
 #define DURATION 2

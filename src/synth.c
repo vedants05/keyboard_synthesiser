@@ -3,7 +3,7 @@ This is the main file
 */
 
 #include <stdlib.h>
-
+#include <stdio.h>
 
 #include "synth.h"
 #include "utils.h"

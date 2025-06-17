@@ -4,6 +4,7 @@
 #include "../src/utils.h"
 #include "../src/waves.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 void test_callback(
