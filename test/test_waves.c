@@ -1,8 +1,8 @@
 #include <SDL3/SDL.h>
 #include <math.h>
-#include "../src/audio.h"
-#include "../src/utils.h"
-#include "../src/waves.h"
+#include "../src/backend/audio.h"
+#include "../src/backend/utils.h"
+#include "../src/backend/waves.h"
 #include <stdlib.h>
 #include <stdio.h>
 
