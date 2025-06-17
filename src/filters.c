@@ -7,6 +7,39 @@ static inline float clampf(float v, float lo, float hi) {
   return v < lo ? lo : (v > hi ? hi : v);
 }
 
+void init_synth_filter(Biquad *f, int sample_rate, FilterType type, float init_cutoff, float init_Q) {
+    init_biquad(f, sample_rate, init_cutoff, init_Q);
+    f->type = type;
+    update_coefficients_biquad(f);
+}
+
+void set_filter_cutoff(Biquad *f, float cutoff) {
+    f->cutoff = cutoff;
+    update_coefficients_biquad(f);
+}
+
+void set_filter_resonance(Biquad *f, float Q) {
+    f->Q = Q;
+    update_coefficients_biquad(f);
+}
+
+void set_filter_type(Biquad *f, FilterType type) {
+    f->type = type;
+    update_coefficients_biquad(f);
+}
+
+void apply_biquad(Biquad *f, int16_t *buffer, int bufferlen) {
+    for (int i = 0; i < bufferlen; ++i) {
+        // Apply the Biquad filter to each sample in the buffer
+        int16_t input = buffer[i];
+        float x = (float)input / 32768.0f; // Normalize input to [-1.0, 1.0]
+        float y = process_sample(f, x);
+        y = clampf(y, -1.0f, +1.0f);
+        int16_t out = (int16_t)(y * 32767.0f); // Scale back to original range
+        buffer[i] = out;
+    }
+}
+
 // Setup function for HPF or LPF Biquad filters
 static void setup_lpf(Biquad *f, int fs, float cutoff, float Q) {
     init_biquad(f, fs, cutoff, Q);
@@ -30,24 +63,6 @@ void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resona
 // Attenuates frequencies below the cutoff frequency
 void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate) {
     apply_biquad_filter(buffer, bufferlen, setup_lpf, sample_rate, cutoff, resonance);
-}
-
-
-void apply_biquad_filter(int16_t *buffer, int bufferlen, FilterSetupFn setup,
-                         int sample_rate, float cutoff, float Q) {
-
-    Biquad filter;
-    setup(&filter, sample_rate, cutoff, Q);
-
-    for (int i = 0; i < bufferlen; i++) {
-        // Apply the Biquad filter to each sample in the buffer
-        int16_t input = buffer[i];
-        float x = (float)input / 32768.0f; // Normalize input to [-1.0, 1.0]
-        float y = process_sample(&filter, x);
-        y = clampf(y, -1.0f, +1.0f);
-        int16_t out = (int16_t)(y * 32767.0f); // Scale back to original range
-        buffer[i] = out;
-    }
 }
 
 void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q) {
