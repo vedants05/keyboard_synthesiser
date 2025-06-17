@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <SDL3/SDL.h>
+#include "filters.h"
 
 typedef enum { SINE, SQUARE, SAW } wave_t;
 
@@ -13,6 +14,7 @@ typedef struct {
     int amplitude;
     int phase;
     wave_t wave_type;
+    Biquad *filter;
 }
 SynthContext;
 
