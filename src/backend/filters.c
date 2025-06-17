@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 #include "filters.h"
 
@@ -60,12 +61,16 @@ static void setup_hpf(Biquad *f, int fs, float cutoff, float Q) {
 
 // Attenuates frequencies above the cutoff frequency
 void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate) {
-    apply_biquad_filter(buffer, bufferlen, setup_hpf, sample_rate, cutoff, resonance);
+    Biquad *filter = malloc(sizeof(Biquad));
+    setup_hpf(filter, sample_rate, cutoff, resonance);
+    apply_biquad(filter, buffer, bufferlen);
 }
 
 // Attenuates frequencies below the cutoff frequency
 void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate) {
-    apply_biquad_filter(buffer, bufferlen, setup_lpf, sample_rate, cutoff, resonance);
+    Biquad *filter = malloc(sizeof(Biquad));
+    setup_lpf(filter, sample_rate, cutoff, resonance);
+    apply_biquad(filter, buffer, bufferlen);
 }
 
 void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q) {
