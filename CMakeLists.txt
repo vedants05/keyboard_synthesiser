@@ -13,10 +13,10 @@ add_subdirectory(third_party/sdl3)
 
 # Source files
 set(SHARED_SOURCES
-        src/audio.c
-        src/utils.c
-        src/waves.c
-        src/filters.c
+        src/backend/audio.c
+        src/backend/utils.c
+        src/backend/waves.c
+        src/backend/filters.c
 )
 
 add_executable(synth 
