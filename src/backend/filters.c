@@ -118,4 +118,14 @@ float process_sample(Biquad *filter, float x) {
 
     return y;
 }
+
+// Allocate a Biquad on the heap for Python/ctypes
+void *malloc_biquad(void) {
+    return malloc(sizeof(Biquad));
+}
+
+// Free it later
+void free_biquad(void *p) {
+    free(p);
+}
                         
