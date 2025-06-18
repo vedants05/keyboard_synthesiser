@@ -336,7 +336,7 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = NULL;
 
     // Initialize SDL (Video only, as audio is backend)
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
         return 1;
     }

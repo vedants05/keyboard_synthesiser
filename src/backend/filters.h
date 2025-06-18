@@ -23,6 +23,7 @@ extern void init_synth_filter(Biquad *f, int sample_rate, FilterType type, float
 // Live updates from user input
 extern void set_filter_cutoff(Biquad *f, float cutoff);
 extern void set_filter_resonance(Biquad *f, float Q);
+extern void set_filter_type(Biquad *f, FilterType filter_type);
 extern void apply_biquad(Biquad *f, int16_t *buffer, int bufferlen);
 
 // Function pointer type for filter setup

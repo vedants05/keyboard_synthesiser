@@ -159,15 +159,15 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
                         case SDLK_4: { // Cycle through filters
                             switch (ctx->filter->type) {
                                 case HPF: 
-                                    ctx->filter->type = NO_FILTER;
+                                    set_filter_type(ctx->filter, NO_FILTER);
                                     printf("No filter selected\n");
                                     break;
                                 case LPF: 
-                                    ctx->filter->type = HPF;
+                                    set_filter_type(ctx->filter, HPF);
                                     printf("High pass filter selected\n");
                                     break;
                                 case NO_FILTER: 
-                                    ctx->filter->type = LPF;
+                                    set_filter_type(ctx->filter, LPF);
                                     printf("Low pass filter selected\n");
                                     break;
                             }
