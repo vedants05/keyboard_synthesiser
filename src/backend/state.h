@@ -6,8 +6,10 @@
 
 typedef enum { SINE, SQUARE, SAW } wave_t;
 
+
 typedef struct {
     wave_t wave_type;
+    int octave;
     int amplitude;
     FilterType filter_type;
     float cutoff;
@@ -20,7 +22,7 @@ typedef struct {
     int sample_rate;
     double frequency;
     int amplitude;
-    int phase;
+    double phase;
     wave_t wave_type;
     Biquad *filter;
 } SynthContext;

@@ -23,14 +23,21 @@ int16_t *generate_sine(SynthContext *ctx, int num_samples) {
         return NULL;
     }
 
+    double phase = ctx->phase;
+    double phase_inc = 2.0 * M_PI * ctx->frequency / ctx->sample_rate;
+
     for (int i = 0; i < num_samples; ++i) {
-        double time = (double)(start_phase + i) / ctx->sample_rate;
-        buffer[i] = (int16_t)(amplitude * sin(2.0 * M_PI * frequency * time));
+        buffer[i] = (int16_t)(ctx->amplitude * sin(phase));
+        phase += phase_inc;
+
+        // Wrap phase to stay within 0 - 2π
+        if (phase >= 2.0 * M_PI) {
+            phase -= 2.0 * M_PI;
+        }
     }
 
-    ctx->phase += num_samples; // update phase 
-
-    return buffer; 
+    ctx->phase = phase;
+    return buffer;
 }
 
 

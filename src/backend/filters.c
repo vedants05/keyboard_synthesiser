@@ -3,9 +3,11 @@
 #include <math.h>
 #include "filters.h"
 
-#ifndef M_PI
+
+#ifndef M_PI // for Windows
 #define M_PI 3.14159265358979323846
 #endif
+
 // Clamp a float value between lo and hi
 static inline float clampf(float v, float lo, float hi) {
   return v < lo ? lo : (v > hi ? hi : v);

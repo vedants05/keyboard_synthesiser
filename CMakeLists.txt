@@ -17,6 +17,7 @@ set(SHARED_SOURCES
         src/backend/utils.c
         src/backend/waves.c
         src/backend/filters.c
+        src/backend/notes.c
 )
 
 add_executable(synth 
