@@ -1,3 +1,0 @@
-Standardise the style
-Convert the floats to doubles
-Remove unnecessary arguments to functions

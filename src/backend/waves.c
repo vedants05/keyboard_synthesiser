@@ -11,8 +11,18 @@
 
 
 int16_t *generate_sine(SynthContext *ctx, int num_samples) {
+    // No sound to output
+    if (ctx->current_amplitude == 0) {
+        int16_t *buffer = calloc(num_samples, sizeof(int16_t));  // Zeroed buffer
+        if (!buffer) {
+            fprintf(stderr, "Could not allocate silent audio buffer\n");
+            return NULL;
+        }
+        return buffer;
+    }
+
     // snapshot of ctx
-    int amplitude = ctx->amplitude;
+    int amplitude = ctx->current_amplitude;
     double frequency = ctx->frequency;    
     int start_phase = ctx->phase;
 
@@ -27,7 +37,7 @@ int16_t *generate_sine(SynthContext *ctx, int num_samples) {
     double phase_inc = 2.0 * M_PI * ctx->frequency / ctx->sample_rate;
 
     for (int i = 0; i < num_samples; ++i) {
-        buffer[i] = (int16_t)(ctx->amplitude * sin(phase));
+        buffer[i] = (int16_t)(ctx->current_amplitude * sin(phase));
         phase += phase_inc;
 
         // Wrap phase to stay within 0 - 2π
@@ -42,7 +52,17 @@ int16_t *generate_sine(SynthContext *ctx, int num_samples) {
 
 
 int16_t *generate_saw(SynthContext *ctx, int num_samples) {
-    int amplitude = ctx->amplitude;
+    // No sound to output
+    if (ctx->current_amplitude == 0) {
+        int16_t *buffer = calloc(num_samples, sizeof(int16_t));  // Zeroed buffer
+        if (!buffer) {
+            fprintf(stderr, "Could not allocate silent audio buffer\n");
+            return NULL;
+        }
+        return buffer;
+    }
+
+    int amplitude = ctx->current_amplitude;
     double frequency = ctx->frequency;
     int start_phase = ctx->phase;
 
@@ -64,7 +84,18 @@ int16_t *generate_saw(SynthContext *ctx, int num_samples) {
 }
 
 int16_t *generate_square(SynthContext *ctx, int num_samples) {
-    int amplitude = ctx->amplitude;
+
+    // No sound to output
+    if (ctx->current_amplitude == 0) {
+        int16_t *buffer = calloc(num_samples, sizeof(int16_t));  // Zeroed buffer
+        if (!buffer) {
+            fprintf(stderr, "Could not allocate silent audio buffer\n");
+            return NULL;
+        }
+        return buffer;
+    }
+
+    int amplitude = ctx->current_amplitude;
     double frequency = ctx->frequency;
     int start_phase = ctx->phase;
 
