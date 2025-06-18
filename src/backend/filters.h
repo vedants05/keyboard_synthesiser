@@ -28,15 +28,15 @@ extern void apply_biquad(Biquad *f, int16_t *buffer, int bufferlen);
 // Function pointer type for filter setup
 typedef void (*FilterSetupFn)(Biquad *filter, int sample_rate, float cutoff, float Q);
 
-void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
-void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
+extern void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
+extern void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
 
-void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q);
-void update_coefficients_biquad(Biquad *filter);
-float process_sample(Biquad *filter, float x);
+extern void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q);
+extern void update_coefficients_biquad(Biquad *filter);
+extern float process_sample(Biquad *filter, float x);
 
 // For Python/ctypes unit testing:
-void *malloc_biquad(void);
-void  free_biquad(void *p);
+extern void *malloc_biquad(void);
+extern void free_biquad(void *p);
 
 #endif // FILTERS_H

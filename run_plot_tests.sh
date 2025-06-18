@@ -12,3 +12,4 @@ cd ..
 
 # Run the Python filter‐test script (which calls plt.show())
 python3 test/test_filters.py
+python3 test/test_waves.py 
