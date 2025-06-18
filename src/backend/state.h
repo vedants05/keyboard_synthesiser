@@ -21,7 +21,8 @@ typedef struct {
     int channels;
     int sample_rate;
     double frequency;
-    int amplitude;
+    int current_amplitude;
+    int max_amplitude;
     double phase;
     wave_t wave_type;
     Biquad *filter;

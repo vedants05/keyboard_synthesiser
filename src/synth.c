@@ -9,9 +9,8 @@ S = A and K = G, with all the notes in between, including sharps and flats
 3 = Saw wave
 Arrow up = Increase filter cutoff
 Arrow down = Decrease filter cutoff
-+ = octave up 
-- = octave down
-
+] = octave up 
+[ = octave down
 
 */
 

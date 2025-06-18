@@ -51,7 +51,9 @@ void synth_callback(void *userdata, SDL_AudioStream *stream,
     }
 
     // Apply your biquad filter here BEFORE pushing to SDL
-    apply_biquad(ctx->filter, buffer, num_samples);
+    if (ctx->filter->type != NO_FILTER) {
+        apply_biquad(ctx->filter, buffer, num_samples);
+    }
 
     int buffer_size = num_samples * bytes_per_sample;
     SDL_PutAudioStreamData(stream, buffer, buffer_size);
@@ -80,7 +82,8 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
     }
 
     ctx->frequency = 440.0;
-    ctx->amplitude = 3000;
+    ctx->current_amplitude = 3000;
+    ctx->max_amplitude = 3000;
     ctx->phase = 0;
     ctx->wave_type = SINE;
 
@@ -119,7 +122,10 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
     printf("3. Press ESC to exit\n");
     printf("=================\n\n");
 
+    
+    ctx->current_amplitude = 0;
     while (*running) {
+        SDL_ResumeAudioStreamDevice(stream);
         while (SDL_PollEvent(event)) {
             char note[4] = {0};
             switch (event->type) {
@@ -135,6 +141,7 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
                         case SDLK_E: strcpy(note, "A#"); break;
                         case SDLK_D: strcpy(note, "B"); break;
                         case SDLK_F: strcpy(note, "C"); break;
+                        case SDLK_T: strcpy(note, "C#"); break;
                         case SDLK_G: strcpy(note, "D"); break;
                         case SDLK_Y: strcpy(note, "D#"); break;
                         case SDLK_H: strcpy(note, "E"); break;
@@ -149,11 +156,30 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
                         case SDLK_3: ctx->wave_type = SAW; printf("Saw wave selected.\n"); break;
 
                         // Example: Change filter cutoff with keys (optional)
+                        case SDLK_4: { // Cycle through filters
+                            switch (ctx->filter->type) {
+                                case HPF: 
+                                    ctx->filter->type = NO_FILTER;
+                                    printf("No filter selected\n");
+                                    break;
+                                case LPF: 
+                                    ctx->filter->type = HPF;
+                                    printf("High pass filter selected\n");
+                                    break;
+                                case NO_FILTER: 
+                                    ctx->filter->type = LPF;
+                                    printf("Low pass filter selected\n");
+                                    break;
+                            }
+                            break;
+                        }
+
                         case SDLK_UP:
                             set_filter_cutoff(ctx->filter, ctx->filter->cutoff + 500.0f);
                             printf("Filter cutoff increased to %.1f Hz\n", ctx->filter->cutoff);
                             break;
                         case SDLK_DOWN:
+                            if (ctx->filter->cutoff <= 500.0f) continue;
                             set_filter_cutoff(ctx->filter, ctx->filter->cutoff - 500.0f);
                             printf("Filter cutoff decreased to %.1f Hz\n", ctx->filter->cutoff);
                             break;
@@ -165,7 +191,8 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
                     }
 
                     if (strlen(note) > 0) {
-                        int octave_to_use = user_state->octave;
+                        ctx->current_amplitude = ctx->max_amplitude;
+                        int octave_to_use = user_state->octave;  
                         if (strcmp(note, "A") == 0 || strcmp(note, "A#") == 0 || strcmp(note, "B") == 0)
                             octave_to_use -= 1;
                         if (octave_to_use > 8 || octave_to_use < 0) {
@@ -175,12 +202,11 @@ int run_synth(bool *running, SDL_Event *event, user_state_t *user_state) {
                         snprintf(note, sizeof(note), "%s%d", note, octave_to_use);
                         double freq = note_to_freq(note);
                         ctx->frequency = freq;
-                        SDL_ResumeAudioStreamDevice(stream);
                     }
                     break;
                 }
                 case SDL_EVENT_KEY_UP:
-                    SDL_PauseAudioStreamDevice(stream);
+                    ctx->current_amplitude = 0;
                     break;
                 case SDL_EVENT_WINDOW_FOCUS_GAINED:
                     printf("Window gained focus - ready for keyboard input!\n");

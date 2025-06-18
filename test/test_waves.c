@@ -75,7 +75,8 @@ int main(void) {
 
     ctx->sample_rate = 48000;
     ctx->frequency = 440.0;
-    ctx->amplitude = 3000;
+    ctx->current_amplitude = 3000;
+    ctx->max_amplitude = 3000;
     ctx->phase = 0;
     ctx->wave_type = SINE;
 

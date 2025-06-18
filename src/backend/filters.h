@@ -5,7 +5,8 @@
 
 typedef enum {
     LPF,  // Low-pass filter
-    HPF   // High-pass filter
+    HPF,   // High-pass filter
+    NO_FILTER
 } FilterType;
 typedef struct {
     FilterType type;   // LPF or HPF
