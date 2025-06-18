@@ -2,6 +2,8 @@ import os
 import sys
 import ctypes
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 # Choose .dylib on macOS, .so on Linux
@@ -81,7 +83,10 @@ lib.free_biquad(bq_hp)
 hp_mag = 20 * np.log10(np.abs(np.fft.rfft(hp_imp_resp)) + 1e-12)
 
 # overlay on the same figure
-plt.figure(figsize=(10, 5))
+fig1 = plt.figure(figsize=(10, 5))
+mgr = fig1.canvas.manager
+if hasattr(mgr, "window"):
+    mgr.window.wm_geometry("+0+0")
 plt.semilogx(freqs, mag,    label=f"LPF : (fc={cutoff} Hz, Q={Q})")
 plt.semilogx(freqs, hp_mag, label=f"HPF : (fc={cutoff} Hz, Q={Q})")
 plt.axvline(cutoff, color='k', linestyle='--', linewidth=1, label="Cutoff frequency")
@@ -90,7 +95,7 @@ plt.ylabel("Magnitude (dB)")
 plt.title("LPF vs HPF on a sound curve")
 plt.legend()
 plt.grid(True, which='both', linestyle=':', linewidth=0.5)
-
+plt.show(block=False)
 
 # ─── Time-Domain Chirp Test for LPF & HPF ─────────────────────────────────
 
@@ -126,7 +131,10 @@ lib.free_biquad(bq_h)
 mid_idx = len(t_chirp) // 4
 
 # Plot Original vs LPF for first half only
-plt.figure(figsize=(10, 3))
+fig2 = plt.figure(figsize=(10, 3))
+mgr2 = fig2.canvas.manager
+if hasattr(mgr2, "window"):
+    mgr2.window.wm_geometry("+0+600")
 plt.plot(t_chirp[:mid_idx], chirp[:mid_idx],      label="Original Chirp", alpha=0.6)
 plt.plot(t_chirp[:mid_idx], lpf_chirp[:mid_idx],  label="LPF Output",    linewidth=2)
 plt.xlabel("Time (s)")
@@ -134,9 +142,13 @@ plt.ylabel("Amplitude")
 plt.title("Original vs Low-Pass Filtered Chirp")
 plt.legend()
 plt.grid(True)
+plt.show(block=False)
 
 # Plot Original vs HPF for first half only
-plt.figure(figsize=(10, 3))
+fig3 = plt.figure(figsize=(10, 3))
+mgr3 = fig3.canvas.manager
+if hasattr(mgr3, "window"):
+    mgr3.window.wm_geometry("+700+600")
 plt.plot(t_chirp[:mid_idx], chirp[:mid_idx],      label="Original Chirp", alpha=0.6)
 plt.plot(t_chirp[:mid_idx], hpf_chirp[:mid_idx],  label="HPF Output",    linewidth=2)
 plt.xlabel("Time (s)")
@@ -144,6 +156,7 @@ plt.ylabel("Amplitude")
 plt.title("Original vs High-Pass Filtered Chirp")
 plt.legend()
 plt.grid(True)
+plt.show(block=False)
 
 if __name__ == "__main__":
     plt.show(block=True)
