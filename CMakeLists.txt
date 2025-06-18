@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 11)
 # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".lib" ".so" ".dylib")
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS OFF) 
 
 add_subdirectory(third_party/sdl3)
 
@@ -71,6 +71,14 @@ if(BUILD_WAVE_TEST)
     target_compile_definitions(wave_test PRIVATE SDL_STATIC)
 endif()
 
+
+
+add_executable(gui_test 
+    src/frontend/main.c
+)
+target_link_libraries(gui_test PRIVATE SDL3-static)
+target_compile_definitions(gui_test PRIVATE SDL_STATIC)
+
 # A shared library for Python tests
 
 add_library(synthcore SHARED
@@ -102,3 +110,4 @@ add_custom_target(python-test
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   COMMENT "Running Python filter unit tests…"
 )
+
