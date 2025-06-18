@@ -72,8 +72,42 @@ if(BUILD_WAVE_TEST)
 endif()
 
 
+
 add_executable(gui_test 
     src/frontend/main.c
 )
 target_link_libraries(gui_test PRIVATE SDL3-static)
 target_compile_definitions(gui_test PRIVATE SDL_STATIC)
+
+# A shared library for Python tests
+
+add_library(synthcore SHARED
+    src/backend/filters.c
+)
+
+set_target_properties(synthcore PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "synthcore"
+)
+
+target_include_directories(synthcore PUBLIC
+    ${CMAKE_SOURCE_DIR}/src/backend
+)
+
+# On Windows you may need to export symbols; if so, define an export macro:
+# target_compile_definitions(synthcore PRIVATE EXPORT_FOR_PYTHON)
+
+# find the Python interpreter
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# make sure Python can find synthcore in the build dir
+set(ENV{PYTHONPATH} "${CMAKE_BINARY_DIR}")
+
+add_custom_target(python-test
+  COMMAND ${Python3_EXECUTABLE}
+          ${CMAKE_SOURCE_DIR}/test/test_filters.py
+  DEPENDS synthcore
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMENT "Running Python filter unit tests…"
+)
+

@@ -34,4 +34,8 @@ void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q);
 void update_coefficients_biquad(Biquad *filter);
 float process_sample(Biquad *filter, float x);
 
+// For Python/ctypes unit testing:
+void *malloc_biquad(void);
+void  free_biquad(void *p);
+
 #endif // FILTERS_H
