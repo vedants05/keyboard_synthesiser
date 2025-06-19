@@ -14,6 +14,16 @@ const float BLACK_KEY_HEIGHT = 144.0f;
 // Array to hold all keys (global for easy access in later functions)
 PianoKey keys[NUM_WHITE_KEYS + NUM_BLACK_KEYS]; // One octave (C to C)
 
+// Map physical keys to virtual piano keys
+const SDL_Scancode white_key_scancodes[NUM_WHITE_KEYS] = {
+    SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F, SDL_SCANCODE_G,
+    SDL_SCANCODE_H, SDL_SCANCODE_J, SDL_SCANCODE_K, SDL_SCANCODE_L
+};
+
+const SDL_Scancode black_key_scancodes[NUM_BLACK_KEYS] = {
+    SDL_SCANCODE_E, SDL_SCANCODE_T, SDL_SCANCODE_Y, SDL_SCANCODE_I, SDL_SCANCODE_O
+};
+
 // Function to calculate frequency from MIDI note number  - Is this required??
 double midi_to_frequency(int midi_note) {
     return 440.0 * pow(2.0, (double)(midi_note - 69) / 12.0);
@@ -53,16 +63,11 @@ void init_keyboard(float start_x, float start_y) {
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){white_key_pos_x, start_y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT};
         white_key_pos_x += WHITE_KEY_WIDTH;
+        keys[key_index].scancode = white_key_scancodes[i];
         key_index++;
     }
 
-    // Then, initialize black keys (overlap white keys)
-    // Positions are relative to the *white keys* they sit between
-    // C# is between C and D
-    // D# is between D and E
-    // F# is between F and G
-    // G# is between G and A
-    // A# is between A and B
+
     key_index = NUM_WHITE_KEYS; // Start adding black keys after white keys
     float black_key_offset_x[] = {1.0f, 3.0f, 4.0f, 6.0f, 7.0f}; // Offsets from start of white key
     int black_key_midi_notes[] = {61, 63, 66, 68, 70}; // C#4, D#4, F#4, G#4, A#4
@@ -75,7 +80,50 @@ void init_keyboard(float start_x, float start_y) {
         keys[key_index].rect = (SDL_FRect){start_x + black_key_offset_x[i] * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2,
                                             start_y,
                                             BLACK_KEY_WIDTH, BLACK_KEY_HEIGHT};
+        keys[key_index].scancode = black_key_scancodes[i];
         key_index++;
+    }
+}
+
+void handle_physical_key_down(SDL_Scancode scancode) {
+    // If a note is already playing, stop it first (monophonic behavior)
+    if (note_is_playing) {
+        stop_synth_note();
+        note_is_playing = 0;
+        // Also un-press any key that was held down
+        for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
+            keys[i].is_pressed = 0;
+        }
+    }
+
+    // Find the key that corresponds to the pressed scancode
+    for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
+        if (keys[i].scancode == scancode) {
+            if (!keys[i].is_pressed) {
+                keys[i].is_pressed = 1;
+                start_synth_note(keys[i].frequency, get_current_volume());
+                note_is_playing = 1;
+            }
+            return; // Found our key, no need to check others
+        }
+    }
+}
+
+// --- NEW: Handler for physical key up event ---
+void handle_physical_key_up(SDL_Scancode scancode) {
+    // Find the key that corresponds to the released scancode
+    for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
+        if (keys[i].scancode == scancode) {
+            // Only stop the note if this is the key that was playing
+            if (keys[i].is_pressed) {
+                keys[i].is_pressed = 0;
+                if (note_is_playing) {
+                    stop_synth_note();
+                    note_is_playing = 0;
+                }
+            }
+            return; // Found our key
+        }
     }
 }
 
@@ -162,3 +210,4 @@ void draw_keyboard(SDL_Renderer *renderer) {
         }
     }
 }
+

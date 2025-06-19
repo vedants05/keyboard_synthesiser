@@ -32,6 +32,7 @@ int init_window(SDL_Window **window){
         SDL_Quit();
         return 1;
     }
+    SDL_MaximizeWindow(*window);
     return 0;
 }
 
@@ -152,7 +153,18 @@ void run(SDL_Renderer *renderer){
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_EVENT_QUIT) {
                 quit = 1;
-            } else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+            }
+            else if (e.type == SDL_EVENT_KEY_DOWN) {
+                // The e.key.repeat flag is true if this is an auto-repeated key press
+                // We only want to trigger the note on the first press.
+                if (e.key.repeat == 0) {
+                    handle_physical_key_down(e.key.scancode);
+                }
+            } 
+            else if (e.type == SDL_EVENT_KEY_UP) {
+                handle_physical_key_up(e.key.scancode);
+            }
+            else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 // Check slider interactions
                 // Check slider interactions
                 // ... inside SDL_EVENT_MOUSE_BUTTON_DOWN ...
