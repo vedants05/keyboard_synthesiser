@@ -1,30 +1,23 @@
 #include <stdio.h>
 #include <SDL3/SDL_main.h>
-
-
-#include "button.h"
-#include "slider.h"
-#include "keyboard.h"
+#include "frontend/button.h"
+#include "frontend/slider.h"
+#include "frontend/keyboard.h"
 #include "run.h"
-#include "utils.h"
+#include "frontend/utils.h"
 
-// --- Backend Interface (REPLACE THESE WITH YOUR ACTUAL BACKEND CALLS) ---
-// These are placeholder functions. Your actual backend would implement these
-// and do the real audio synthesis work based on these parameters.
-
-int main(int argc, char* argv[]) {
-    SDL_Window* window = NULL;
-    SDL_Renderer* renderer = NULL;
-
+int init_SDL(void){
     // Initialize SDL (Video only, as audio is backend)
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
         return 1;
     }
-
+    return 0;
+}
+int init_window(SDL_Window **window){
     // --- Window and Renderer Setup ---
-    window = SDL_CreateWindow(
-        "SDL3 Synthesiser Frontend",
+    *window = SDL_CreateWindow(
+        "Synth34",
         900, // Width to accommodate keyboard
         600, // Height
         SDL_WINDOW_RESIZABLE
@@ -34,46 +27,84 @@ int main(int argc, char* argv[]) {
         SDL_Quit();
         return 1;
     }
+    return 0;
+}
 
-    renderer = SDL_CreateRenderer(window, NULL);
-    if (renderer == NULL) {
+int init_renderer(SDL_Window *window, SDL_Renderer **renderer){
+    *renderer = SDL_CreateRenderer(window, NULL);
+    if (*renderer == NULL) {
         fprintf(stderr, "could not create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
     }
+    return 0;
+}
 
-    // --- GUI Elements Initialization ---
+void cleanup(SDL_Window *window, SDL_Renderer *renderer){
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
 
+void add_sliders(Slider *freq_slider, Slider *vol_slider){
     // Frequency Slider (20Hz to 20000Hz, for finer control from keys)
-    Slider freq_slider;
-    init_slider(&freq_slider, 750.0f, 100.0f, 20.0f, 300.0f,
+    init_slider(freq_slider, 750.0f, 100.0f, 20.0f, 300.0f,
                 20.0f, 20000.0f, get_current_frequency(), "Frequency",
                 (void (*)(float))set_synth_frequency);
 
     // Volume Slider (0.0 to 1.0)
-    Slider vol_slider;
-    init_slider(&vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
+    init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
                 0.0f, 1.0f, get_current_volume(), "Volume",
                 (void (*)(float))set_synth_volume);
 
-    // Waveform Buttons
-    Button sine_button = { {50.0f, 50.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
-    Button square_button = { {160.0f, 50.0f, 100.0f, 40.0f}, "Square", 0, NULL };
+}
+
+void add_buttons(Button *sine_button, Button *square_button, Button *saw_button) {
+    Button sine = { {50.0f, 50.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
+    Button square = { {160.0f, 50.0f, 100.0f, 40.0f}, "Square", 0, NULL };
+    Button saw = { {270.0f, 50.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
+    *sine_button = sine;
+    *square_button = square;
+    *saw_button = saw;
+}
+
+void add_GUI_elements(Slider *freq_slider, Slider *vol_slider,Button *sine_button, Button *square_button, Button *saw_button){
+    // Adding Sliders 
+    add_sliders(freq_slider, vol_slider);
+
+    
+    // Adding Waveform Buttons
+    add_buttons(sine_button, square_button, saw_button);
 
     // Set initial waveform button state
     if (get_current_waveform_type() == 0) {
-        sine_button.is_selected = 1;
-        square_button.is_selected = 0;
+        sine_button->is_selected = 1;
+        square_button->is_selected = 0;
+        saw_button->is_selected = 0;
+    } else if (get_current_waveform_type() == 1) {
+        sine_button->is_selected = 0;
+        square_button->is_selected = 1;
+        saw_button->is_selected = 0;
     } else {
-        sine_button.is_selected = 0;
-        square_button.is_selected = 1;
+        sine_button->is_selected = 0;
+        square_button->is_selected = 0;
+        saw_button->is_selected = 1;
     }
 
     // Initialize the keyboard (placed below other controls)
     init_keyboard(50.0f, 300.0f); // X, Y position for keyboard start
+}
 
-    // --- Main Event Loop ---
+void run(SDL_Renderer *renderer){
+    Slider freq_slider;
+    Slider vol_slider;
+    Button sine_button;
+    Button square_button;
+    Button saw_button;
+
+    add_GUI_elements(&freq_slider, &vol_slider, &sine_button, &square_button, &saw_button);
+
     SDL_Event e;
     int quit = 0;
     while (!quit) {
@@ -153,6 +184,7 @@ int main(int argc, char* argv[]) {
         draw_slider(renderer, &vol_slider);
         draw_button(renderer, &sine_button);
         draw_button(renderer, &square_button);
+        draw_button(renderer, &saw_button);
 
         // Draw the keyboard
         draw_keyboard(renderer);
@@ -160,11 +192,17 @@ int main(int argc, char* argv[]) {
         // Update the screen
         SDL_RenderPresent(renderer);
     }
+}
 
-    // --- Cleanup ---
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+int main(int argc, char* argv[]) {
+    SDL_Window* window = NULL;
+    SDL_Renderer* renderer = NULL;
+
+    if (init_SDL() != 0) return 1;
+    if (init_window(&window) != 0) return 1;
+    if (init_renderer(window, &renderer) != 0) return 1;
+    run(renderer);
+    cleanup(window, renderer);
 
     return 0;
 }

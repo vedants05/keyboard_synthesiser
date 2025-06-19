@@ -85,7 +85,7 @@ set(SHARED_SOURCES_2
 
 
 add_executable(gui_test 
-    src/frontend/run.c
+    src/run.c
     ${SHARED_SOURCES_2}
 )
 target_link_libraries(gui_test PRIVATE SDL3-static)
