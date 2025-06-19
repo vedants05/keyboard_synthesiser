@@ -2,7 +2,7 @@
 #define BUTTON_H
 
 #include "utils.h"
-//#include <SDL3_ttf/SDL_ttf.h> 
+#include <SDL3_ttf/SDL_ttf.h>
 
 
 typedef struct {
@@ -12,6 +12,6 @@ typedef struct {
     void (*on_click)(void); //Function pointer that requires takes in a function that has void input/outputs and this function is executed when the button is clicked
 } Button;
 
-void draw_button(SDL_Renderer *renderer, Button *button);
+void draw_button(SDL_Renderer *renderer,TTF_Font *font, Button *button);
 
 #endif

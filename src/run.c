@@ -12,6 +12,10 @@ int init_SDL(void){
         fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
         return 1;
     }
+    if (TTF_Init() < 0) {
+    SDL_Log("TTF_Init failed: %s", SDL_GetError());
+    return 1;
+    }
     return 0;
 }
 int init_window(SDL_Window **window){
@@ -102,6 +106,7 @@ void run(SDL_Renderer *renderer){
     Button sine_button;
     Button square_button;
     Button saw_button;
+    TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 20);
 
     add_GUI_elements(&freq_slider, &vol_slider, &sine_button, &square_button, &saw_button);
 
@@ -182,9 +187,9 @@ void run(SDL_Renderer *renderer){
         // Draw GUI elements
         draw_slider(renderer, &freq_slider);
         draw_slider(renderer, &vol_slider);
-        draw_button(renderer, &sine_button);
-        draw_button(renderer, &square_button);
-        draw_button(renderer, &saw_button);
+        draw_button(renderer,font, &sine_button);
+        draw_button(renderer,font, &square_button);
+        draw_button(renderer,font, &saw_button);
 
         // Draw the keyboard
         draw_keyboard(renderer);
