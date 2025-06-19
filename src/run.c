@@ -185,8 +185,8 @@ void run(SDL_Renderer *renderer){
         SDL_RenderClear(renderer);
 
         // Draw GUI elements
-        draw_slider(renderer, &freq_slider);
-        draw_slider(renderer, &vol_slider);
+        draw_slider(renderer, font, &freq_slider);
+        draw_slider(renderer, font, &vol_slider);
         draw_button(renderer,font, &sine_button);
         draw_button(renderer,font, &square_button);
         draw_button(renderer,font, &saw_button);

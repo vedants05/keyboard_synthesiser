@@ -2,7 +2,7 @@
 #define SLIDER_H
 
 #include "utils.h"
-//#include <SDL3_ttf/SDL_ttf.h> 
+#include <SDL3_ttf/SDL_ttf.h>
 
 // Structure for a generic slider
 typedef struct {
@@ -21,6 +21,6 @@ void init_slider(Slider *slider, float x, float y, float width, float height,
          
 void update_slider_from_mouse(Slider *slider, int mouse_y);
 
-void draw_slider(SDL_Renderer *renderer, Slider *slider);
+void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider);
 
 #endif
