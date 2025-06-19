@@ -14,6 +14,7 @@ int init_SDL(void){
     }
     return 0;
 }
+
 int init_window(SDL_Window **window){
     // --- Window and Renderer Setup ---
     *window = SDL_CreateWindow(
@@ -47,49 +48,70 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer){
     SDL_Quit();
 }
 
-void add_sliders(Slider *freq_slider, Slider *vol_slider){
+void add_sliders(Slider *filter_slider){
     // Frequency Slider (20Hz to 20000Hz, for finer control from keys)
-    init_slider(freq_slider, 750.0f, 100.0f, 20.0f, 300.0f,
+    init_slider(filter_slider, 800.0f, 100.0f, 20.0f, 300.0f,
                 20.0f, 20000.0f, get_current_frequency(), "Frequency",
                 (void (*)(float))set_synth_frequency);
 
-    // Volume Slider (0.0 to 1.0)
-    init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
-                0.0f, 1.0f, get_current_volume(), "Volume",
-                (void (*)(float))set_synth_volume);
+    // // Volume Slider (0.0 to 1.0)
+    // init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
+    //             0.0f, 1.0f, get_current_volume(), "Volume",
+    //             (void (*)(float))set_synth_volume);
 
 }
 
-void add_buttons(Button *sine_button, Button *square_button, Button *saw_button) {
+void add_buttons(Button *button_list) {
     Button sine = { {50.0f, 50.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
     Button square = { {160.0f, 50.0f, 100.0f, 40.0f}, "Square", 0, NULL };
     Button saw = { {270.0f, 50.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
-    *sine_button = sine;
-    *square_button = square;
-    *saw_button = saw;
+    Button no_filter = { {50.0f, 100.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
+    Button low_filter = { {160.0f, 100.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
+    Button high_filter = { {270.0f, 100.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
+
+    button_list[0] = sine;
+    button_list[1] = square;
+    button_list[2] = saw;
+    button_list[3] = no_filter;
+    button_list[4] = low_filter;
+    button_list[5] = high_filter;
 }
 
-void add_GUI_elements(Slider *freq_slider, Slider *vol_slider,Button *sine_button, Button *square_button, Button *saw_button){
+void add_GUI_elements(Slider *filter_slider, Button *button_list){
     // Adding Sliders 
-    add_sliders(freq_slider, vol_slider);
-
+    add_sliders(filter_slider);
     
-    // Adding Waveform Buttons
-    add_buttons(sine_button, square_button, saw_button);
+    // Adding buttons
+    add_buttons(button_list);
 
-    // Set initial waveform button state
-    if (get_current_waveform_type() == 0) {
-        sine_button->is_selected = 1;
-        square_button->is_selected = 0;
-        saw_button->is_selected = 0;
-    } else if (get_current_waveform_type() == 1) {
-        sine_button->is_selected = 0;
-        square_button->is_selected = 1;
-        saw_button->is_selected = 0;
+    // Set initial waveform button state 
+    if (get_current_waveform_type() == SINE) {
+        button_list[0].is_selected = 1;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 0;
+    } else if (get_current_waveform_type() == SQUARE) {
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 1;
+        button_list[2].is_selected  = 0;
     } else {
-        sine_button->is_selected = 0;
-        square_button->is_selected = 0;
-        saw_button->is_selected = 1;
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 1;
+    }
+
+    // Set initial filter type button state 
+    if (get_current_filter_type() == NO_FILTER) {
+        button_list[0].is_selected = 1;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 0;
+    } else if (get_current_filter_type() == LOW_FILTER) {
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 1;
+        button_list[2].is_selected  = 0;
+    } else {
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 1;
     }
 
     // Initialize the keyboard (placed below other controls)
@@ -102,8 +124,21 @@ void run(SDL_Renderer *renderer){
     Button sine_button;
     Button square_button;
     Button saw_button;
+    Button no_filter_button;
+    Button low_filter_button;
+    Button high_filter_button;
 
-    add_GUI_elements(&freq_slider, &vol_slider, &sine_button, &square_button, &saw_button);
+    //Creating a button list
+    Button buttons[NO_OF_BUTTONS];
+
+    buttons[0] = sine_button;
+    buttons[1] = square_button;
+    buttons[2] = saw_button;
+    buttons[3] = no_filter_button;
+    buttons[4] = low_filter_button;
+    buttons[5] = high_filter_button;
+
+    add_GUI_elements(&freq_slider, &buttons);
 
     SDL_Event e;
     int quit = 0;
