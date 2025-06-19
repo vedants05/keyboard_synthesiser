@@ -63,11 +63,33 @@ if(WIN32)
 
 endif()
 
-target_link_libraries(gui_test PRIVATE
-        harfbuzz     # Explicitly list harfbuzz
-        freetype  
-    )
+if(APPLE)
+    # Find required packages for text rendering on macOS
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(HARFBUZZ REQUIRED harfbuzz)
+    pkg_check_modules(FREETYPE REQUIRED freetype2)
 
+    target_link_libraries(gui_test PRIVATE
+            ${HARFBUZZ_LIBRARIES}
+            ${FREETYPE_LIBRARIES}
+        )
+
+    target_include_directories(gui_test PRIVATE
+            ${HARFBUZZ_INCLUDE_DIRS}
+            ${FREETYPE_INCLUDE_DIRS}
+        )
+
+    target_link_directories(gui_test PRIVATE
+            ${HARFBUZZ_LIBRARY_DIRS}
+            ${FREETYPE_LIBRARY_DIRS}
+        )
+else()
+    # For Windows and other platforms
+    target_link_libraries(gui_test PRIVATE
+            harfbuzz
+            freetype  
+        )
+endif()
 
 if(BUILD_KEYBOARD_TEST)
     add_executable(keyboard_test test/test_keyboard.c)
