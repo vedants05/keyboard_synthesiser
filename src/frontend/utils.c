@@ -4,7 +4,7 @@
 
 static double current_backend_frequency = 440.0;
 static double current_backend_volume = 0.5;
-static int current_backend_waveform_type = 0; // 0: Sine, 1: Square
+static int current_backend_waveform_type = 0; // 0: Sine, 1: Square, 2: Saw
 
 void set_synth_frequency(double freq) {
     if (freq < 20.0) freq = 20.0; // Min frequency
