@@ -73,8 +73,20 @@ endif()
 
 
 
+
+
+# Source files
+set(SHARED_SOURCES_2
+        src/frontend/button.c
+        src/frontend/keyboard.c
+        src/frontend/slider.c
+        src/frontend/utils.c
+)
+
+
 add_executable(gui_test 
-    src/frontend/main.c
+    src/frontend/run.c
+    ${SHARED_SOURCES_2}
 )
 target_link_libraries(gui_test PRIVATE SDL3-static)
 target_compile_definitions(gui_test PRIVATE SDL_STATIC)
