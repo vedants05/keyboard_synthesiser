@@ -74,7 +74,7 @@ endif()
 
 
 add_executable(gui_test 
-    src/frontend/window.c
+    src/frontend/main.c
 )
 target_link_libraries(gui_test PRIVATE SDL3-static)
 target_compile_definitions(gui_test PRIVATE SDL_STATIC)
