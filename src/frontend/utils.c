@@ -4,7 +4,9 @@
 
 static double current_backend_frequency = 440.0;
 static double current_backend_volume = 0.5;
-static int current_backend_waveform_type = 0; // 0: Sine, 1: Square, 2: Saw
+
+static waveform current_waveform_type = SINE; //DEFAULT TO SINE
+static filter_type current_filter_type = NO_FILTER; //DEFAULT TO NO FILTER
 
 void set_synth_frequency(double freq) {
     if (freq < 20.0) freq = 20.0; // Min frequency
@@ -23,10 +25,14 @@ void set_synth_volume(double vol) {
     // printf("Backend: Setting volume to %.2f\n", vol);
 }
 
-void set_synth_waveform(int waveform_type) {
-    current_backend_waveform_type = waveform_type;
+void set_synth_waveform(waveform waveform_type) {
+    current_waveform_type = waveform_type;
     // In your real backend: Tell your audio generation logic to switch waveform.
     // printf("Backend: Setting waveform to %s\n", (waveform_type == 0) ? "Sine" : "Square");
+}
+
+void set_filter_type(filter_type filter) {
+    current_filter_type = filter;
 }
 
 // Function to tell the backend to stop playing sound (for monophonic playback)
@@ -54,6 +60,10 @@ double get_current_volume() {
     return current_backend_volume;
 }
 
-int get_current_waveform_type() {
-    return current_backend_waveform_type;
+waveform get_current_waveform_type() {
+    return current_waveform_type;
+}
+
+filter_type get_current_filter_type() {
+    return current_filter_type;
 }

@@ -18,6 +18,7 @@ int init_SDL(void){
     }
     return 0;
 }
+
 int init_window(SDL_Window **window){
     // --- Window and Renderer Setup ---
     *window = SDL_CreateWindow(
@@ -51,49 +52,70 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer){
     SDL_Quit();
 }
 
-void add_sliders(Slider *freq_slider, Slider *vol_slider){
+void add_sliders(Slider *filter_slider){
     // Frequency Slider (20Hz to 20000Hz, for finer control from keys)
-    init_slider(freq_slider, 750.0f, 100.0f, 20.0f, 300.0f,
+    init_slider(filter_slider, 800.0f, 100.0f, 20.0f, 300.0f,
                 20.0f, 20000.0f, get_current_frequency(), "Frequency",
                 (void (*)(float))set_synth_frequency);
 
-    // Volume Slider (0.0 to 1.0)
-    init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
-                0.0f, 1.0f, get_current_volume(), "Volume",
-                (void (*)(float))set_synth_volume);
+    // // Volume Slider (0.0 to 1.0)
+    // init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
+    //             0.0f, 1.0f, get_current_volume(), "Volume",
+    //             (void (*)(float))set_synth_volume);
 
 }
 
-void add_buttons(Button *sine_button, Button *square_button, Button *saw_button) {
+void add_buttons(Button *button_list) {
     Button sine = { {50.0f, 50.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
     Button square = { {160.0f, 50.0f, 100.0f, 40.0f}, "Square", 0, NULL };
     Button saw = { {270.0f, 50.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
-    *sine_button = sine;
-    *square_button = square;
-    *saw_button = saw;
+    Button no_filter = { {50.0f, 100.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
+    Button low_filter = { {160.0f, 100.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
+    Button high_filter = { {270.0f, 100.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
+
+    button_list[0] = sine;
+    button_list[1] = square;
+    button_list[2] = saw;
+    button_list[3] = no_filter;
+    button_list[4] = low_filter;
+    button_list[5] = high_filter;
 }
 
-void add_GUI_elements(Slider *freq_slider, Slider *vol_slider,Button *sine_button, Button *square_button, Button *saw_button){
+void add_GUI_elements(Slider *filter_slider, Button *button_list){
     // Adding Sliders 
-    add_sliders(freq_slider, vol_slider);
-
+    add_sliders(filter_slider);
     
-    // Adding Waveform Buttons
-    add_buttons(sine_button, square_button, saw_button);
+    // Adding buttons
+    add_buttons(button_list);
 
-    // Set initial waveform button state
-    if (get_current_waveform_type() == 0) {
-        sine_button->is_selected = 1;
-        square_button->is_selected = 0;
-        saw_button->is_selected = 0;
-    } else if (get_current_waveform_type() == 1) {
-        sine_button->is_selected = 0;
-        square_button->is_selected = 1;
-        saw_button->is_selected = 0;
+    // Set initial waveform button state 
+    if (get_current_waveform_type() == SINE) {
+        button_list[0].is_selected = 1;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 0;
+    } else if (get_current_waveform_type() == SQUARE) {
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 1;
+        button_list[2].is_selected  = 0;
     } else {
-        sine_button->is_selected = 0;
-        square_button->is_selected = 0;
-        saw_button->is_selected = 1;
+        button_list[0].is_selected = 0;
+        button_list[1].is_selected  = 0;
+        button_list[2].is_selected  = 1;
+    }
+
+    // Set initial filter type button state 
+    if (get_current_filter_type() == NO_FILTER) {
+        button_list[3].is_selected = 1;
+        button_list[4].is_selected  = 0;
+        button_list[5].is_selected  = 0;
+    } else if (get_current_filter_type() == LOW_FILTER) {
+        button_list[3].is_selected = 0;
+        button_list[4].is_selected  = 1;
+        button_list[5].is_selected  = 0;
+    } else {
+        button_list[3].is_selected = 0;
+        button_list[4].is_selected  = 0;
+        button_list[5].is_selected  = 1;
     }
 
     // Initialize the keyboard (placed below other controls)
@@ -101,14 +123,28 @@ void add_GUI_elements(Slider *freq_slider, Slider *vol_slider,Button *sine_butto
 }
 
 void run(SDL_Renderer *renderer){
-    Slider freq_slider;
-    Slider vol_slider;
+    Slider filter_slider;
     Button sine_button;
     Button square_button;
     Button saw_button;
+    Button no_filter_button;
+    Button low_filter_button;
+    Button high_filter_button;
+
     TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 20);
 
-    add_GUI_elements(&freq_slider, &vol_slider, &sine_button, &square_button, &saw_button);
+
+    //Creating a button list
+    Button buttons[NO_OF_BUTTONS];
+
+    buttons[0] = sine_button;
+    buttons[1] = square_button;
+    buttons[2] = saw_button;
+    buttons[3] = no_filter_button;
+    buttons[4] = low_filter_button;
+    buttons[5] = high_filter_button;
+
+    add_GUI_elements(&filter_slider, buttons);
 
     SDL_Event e;
     int quit = 0;
@@ -125,36 +161,63 @@ void run(SDL_Renderer *renderer){
                     SDL_Point mouse_point = {(int)e.button.x, (int)e.button.y};
 
                     // For sliders and buttons, convert their FRect to Rect for the check
-                    SDL_Rect freq_handle_rect_int = {(int)freq_slider.handle_rect.x, (int)freq_slider.handle_rect.y,
-                                                    (int)freq_slider.handle_rect.w, (int)freq_slider.handle_rect.h};
-                    if (SDL_PointInRect(&mouse_point, &freq_handle_rect_int)) {
-                        freq_slider.is_dragging = 1;
+                    SDL_Rect filter_handle_rect_int = {(int)filter_slider.handle_rect.x, (int)filter_slider.handle_rect.y,
+                                                    (int)filter_slider.handle_rect.w, (int)filter_slider.handle_rect.h};
+
+                    if (SDL_PointInRect(&mouse_point, &filter_handle_rect_int)) {
+                        filter_slider.is_dragging = 1;
                     }
 
-                    SDL_Rect vol_handle_rect_int = {(int)vol_slider.handle_rect.x, (int)vol_slider.handle_rect.y,
-                                                    (int)vol_slider.handle_rect.w, (int)vol_slider.handle_rect.h};
-                    if (SDL_PointInRect(&mouse_point, &vol_handle_rect_int)) {
-                        vol_slider.is_dragging = 1;
+
+                    for (int i = 0; i < NO_OF_BUTTONS/2; i++) {
+                        SDL_Rect button_rect = {
+                            (int)buttons[i].rect.x, (int)buttons[i].rect.y,
+                            (int)buttons[i].rect.w, (int)buttons[i].rect.h
+                        };
+
+                        if (SDL_PointInRect(&mouse_point, &button_rect)) {
+                            // Handle waveform buttons (0 = Sine, 1 = Square, 2 = Saw)
+                            if (i == 0) {
+                                set_synth_waveform(SINE);
+                            } else if (i == 1) {
+                                set_synth_waveform(SQUARE);
+                            } else if (i == 2) {
+                                set_synth_waveform(SAW);
+                            }
+
+                            // Update is_selected state for waveform buttons
+                            for (int j = 0; j <= 2; ++j) {
+                                buttons[j].is_selected = (i == j);
+                            }
+                        }
                     }
 
-                    SDL_Rect sine_button_rect_int = {(int)sine_button.rect.x, (int)sine_button.rect.y,
-                                                    (int)sine_button.rect.w, (int)sine_button.rect.h};
-                    if (SDL_PointInRect(&mouse_point, &sine_button_rect_int)) {
-                        set_synth_waveform(0);
-                        sine_button.is_selected = 1;
-                        square_button.is_selected = 0;
+                    for (int i = 3; i < NO_OF_BUTTONS; i++) {
+                        SDL_Rect button_rect = {
+                            (int)buttons[i].rect.x, (int)buttons[i].rect.y,
+                            (int)buttons[i].rect.w, (int)buttons[i].rect.h
+                        };
+                        if (SDL_PointInRect(&mouse_point, &button_rect)) {
+                            // Handle filter buttons (3 = No Filter, 4 = Low, 5 = High)
+                            if (i == 3) {
+                                set_filter_type(NO_FILTER);
+                            } else if (i == 4) {
+                                set_filter_type(LOW_FILTER);
+                            } else if (i == 5) {
+                                set_filter_type(HIGH_FILTER);
+                            }
+
+
+                            // Update is_selected state for filter buttons
+                            for (int j = 3; j <= 5; j++) {
+                                buttons[j].is_selected = (i == j);
+                            }
+                        }
                     }
 
-                    SDL_Rect square_button_rect_int = {(int)square_button.rect.x, (int)square_button.rect.y,
-                                                    (int)square_button.rect.w, (int)square_button.rect.h};
-                    if (SDL_PointInRect(&mouse_point, &square_button_rect_int)) {
-                        set_synth_waveform(1);
-                        sine_button.is_selected = 0;
-                        square_button.is_selected = 1;
-                    }
 
                     // Handle keyboard presses (if not dragging a slider)
-                    if (!freq_slider.is_dragging && !vol_slider.is_dragging) {
+                    if (!filter_slider.is_dragging ) {
                         handle_key_press(e.button.x, e.button.y); // mouse_x, mouse_y are ints already
                     }
                 }
@@ -162,42 +225,40 @@ void run(SDL_Renderer *renderer){
             } else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 if (e.button.button == SDL_BUTTON_LEFT) {
                     // Release any dragging sliders
-                    freq_slider.is_dragging = 0;
-                    vol_slider.is_dragging = 0;
+                    filter_slider.is_dragging = 0;
                     // Handle keyboard release
                     handle_key_release(e.button.x, e.button.y);
                 }
             } else if (e.type == SDL_EVENT_MOUSE_MOTION) {
-                if (freq_slider.is_dragging) {
-                    update_slider_from_mouse(&freq_slider, e.motion.y);
+                if (filter_slider.is_dragging) {
+                    update_slider_from_mouse(&filter_slider, e.motion.y);
                 }
-                if (vol_slider.is_dragging) {
-                    update_slider_from_mouse(&vol_slider, e.motion.y);
                 } else {
                     // This logic is for highlighting keys on hover, if you wanted that.
                     // For now, it's implicitly handled by `handle_key_press` on click.
                 }
             }
+             // --- Rendering ---
+            SDL_SetRenderDrawColor(renderer, 0x22, 0x22, 0x22, 0xFF); // Darker grey background
+            SDL_RenderClear(renderer);
+
+            // Draw GUI elements
+            draw_slider(renderer, &filter_slider);
+
+            for (int i = 0; i < NO_OF_BUTTONS; i++) {
+                draw_button(renderer,font, &buttons[i]);
+            }
+            
+
+            // Draw the keyboard
+            draw_keyboard(renderer);
+
+            // Update the screen
+            SDL_RenderPresent(renderer);
         }
 
-        // --- Rendering ---
-        SDL_SetRenderDrawColor(renderer, 0x22, 0x22, 0x22, 0xFF); // Darker grey background
-        SDL_RenderClear(renderer);
-
-        // Draw GUI elements
-        draw_slider(renderer, &freq_slider);
-        draw_slider(renderer, &vol_slider);
-        draw_button(renderer,font, &sine_button);
-        draw_button(renderer,font, &square_button);
-        draw_button(renderer,font, &saw_button);
-
-        // Draw the keyboard
-        draw_keyboard(renderer);
-
-        // Update the screen
-        SDL_RenderPresent(renderer);
-    }
 }
+
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
