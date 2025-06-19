@@ -32,7 +32,6 @@ int init_window(SDL_Window **window){
         SDL_Quit();
         return 1;
     }
-    SDL_MaximizeWindow(*window);
     return 0;
 }
 
