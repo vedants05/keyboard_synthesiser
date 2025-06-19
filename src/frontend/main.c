@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+//#include <SDL3_ttf/SDL_ttf.h> 
 #include <stdio.h>
 #include <math.h> // For pow() to calculate frequencies
 
@@ -68,26 +69,32 @@ int get_current_waveform_type() {
 
 // --- Frontend GUI Logic ---
 
+//------------------------------------------------------------------SLIDER STRUCTURE---------------------------------------------------------------------
+
 // Structure for a generic slider
 typedef struct {
-    SDL_FRect track_rect;
-    SDL_FRect handle_rect;
-    float value; // Normalized value 0.0 to 1.0
-    float min_val;
+    SDL_FRect track_rect; //Size of sliders background track
+    SDL_FRect handle_rect; //Size of handle for slider
+    float value; // Stores sliders current value as a ratio between 0.0 (bottom) and 1.0 (top)
+    float min_val; //Actual min and maximum values the slider represents
     float max_val;
-    int is_dragging;
-    void (*on_value_changed)(float); // Callback function when value changes
-    char *label;
+    int is_dragging; //Boolean value to track whether the user is currently holding the mouse down
+    void (*on_value_changed)(float); // Function to be called when value of slider changes - takes in a float which represents the current value of slider
+    char *label; //Label to be written on slider
 } Slider;
 
-// Initialize a slider
+// Initializing a slider
 void init_slider(Slider *slider, float x, float y, float width, float height,
                  float min_val, float max_val, float initial_val, char *label,
                  void (*callback)(float)) {
+
+
     slider->track_rect = (SDL_FRect){x, y, width, height};
-    // Calculate initial handle position based on initial_val relative to min/max
+
+    // Calculate initial handle position based on initial_val relative to min/max - transforms intital_val into its position on slider between 0 and 1
     float initial_norm_pos = (initial_val - min_val) / (max_val - min_val);
-    slider->handle_rect = (SDL_FRect){x - width / 2, y + height * (1.0f - initial_norm_pos) - 10, width * 2, 20.0f};
+    slider->handle_rect = (SDL_FRect){x - width / 2, y + height * (1.0f - initial_norm_pos) - 10, width * 2, 20.0f}; //Calculating handle position relative to slider track
+
     slider->value = initial_norm_pos; // Normalized 0.0-1.0
     slider->min_val = min_val;
     slider->max_val = max_val;
@@ -95,32 +102,40 @@ void init_slider(Slider *slider, float x, float y, float width, float height,
     slider->on_value_changed = callback;
     slider->label = label;
 
-    // Clamp initial handle position
-    if (slider->handle_rect.y < slider->track_rect.y) slider->handle_rect.y = slider->track_rect.y;
-    if (slider->handle_rect.y > slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h)
+    // Safety check to ensure that the calculated starting position of the handle is never visually outside the bounds of the track
+    if (slider->handle_rect.y < slider->track_rect.y) {
+        slider->handle_rect.y = slider->track_rect.y;
+    } 
+    if (slider->handle_rect.y > slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h) {
         slider->handle_rect.y = slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h;
+    }
+
 }
 
-// Update slider value based on mouse Y position
+// Update slider value based on mouse Y position if user is dragging the slider
 void update_slider_from_mouse(Slider *slider, int mouse_y) {
+
+    //Calulating minimum and maximum possible y coordinates for the top edge of the handle so it can't move off the track
     float handle_y_min = slider->track_rect.y;
     float handle_y_max = slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h;
 
+    //Sets the handle's new vertical position to be centered on the mouse cursor
     slider->handle_rect.y = (float)mouse_y - slider->handle_rect.h / 2.0f;
 
-    // Clamp handle position within slider bounds
+    // Fixing handle position within slider bounds
     if (slider->handle_rect.y < handle_y_min) {
         slider->handle_rect.y = handle_y_min;
     } else if (slider->handle_rect.y > handle_y_max) {
         slider->handle_rect.y = handle_y_max;
     }
 
-    // Map handle Y position (inverted for typical vertical slider: higher Y = lower value)
+    // Convert handles current y position to the value relative to slider value between 0 and 1
     float normalized_pos = 1.0f - ((slider->handle_rect.y - handle_y_min) / (handle_y_max - handle_y_min));
     slider->value = normalized_pos; // Normalized 0.0-1.0
+    //Actual value relative to actual numbers for the slider
     float actual_value = slider->min_val + normalized_pos * (slider->max_val - slider->min_val);
 
-    // Call the callback to inform the backend
+    // If a callback function was assigned to the slider, pass in the updated value
     if (slider->on_value_changed) {
         slider->on_value_changed(actual_value);
     }
@@ -139,70 +154,74 @@ void draw_slider(SDL_Renderer *renderer, Slider *slider) {
     // TODO: Add text label using SDL_ttf
 }
 
-// Structure for a button
+// ---------------------------------------------------------------BUTTON STRUCTURE-----------------------------------------------------------------------------------------------------
 typedef struct {
-    SDL_FRect rect;
-    char *label;
-    int is_selected;
-    void (*on_click)(void);
+    SDL_FRect rect; //SDL2 data type that defines a rectangle (stores x,y for height and width) with floating point precision
+    char *label; //Stores text to be displayed on button
+    int is_selected; //Boolean variable tracking state of button
+    void (*on_click)(void); //Function pointer that requires takes in a function that has void input/outputs and this function is executed when the button is clicked
 } Button;
 
-// Render a button
+
+// Render a button - renderer object is responsible for drawing all items in the window
 void draw_button(SDL_Renderer *renderer, Button *button) {
     if (button->is_selected) {
-        SDL_SetRenderDrawColor(renderer, 0x00, 0xAA, 0x00, 0xFF); // Green if selected
+        SDL_SetRenderDrawColor(renderer, 0x00, 0xAA, 0x00, 0xFF); // Green if selected - The four hex arguments are red, green, blue and alpha
     } else {
         SDL_SetRenderDrawColor(renderer, 0x44, 0x44, 0x44, 0xFF); // Dark grey if not
     }
-    SDL_RenderFillRect(renderer, &button->rect);
+    SDL_RenderFillRect(renderer, &button->rect); //Draws a solid, filled rectangle from the colour set using the if/else block above 
+                                                 //Takes in a pointer to the rect of button which stores height and width of button
 
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF); // White border
-    SDL_RenderRect(renderer, &button->rect); // Corrected for SDL3 FRect outline
+    SDL_RenderRect(renderer, &button->rect); // Draws the outline of the rectangle with the colour border selected above
 
     // TODO: Add text label using SDL_ttf
 }
 
-// --- Keyboard Specifics ---
-#define NUM_WHITE_KEYS 8
+// --------------------------------------------------------------- KEYBOARD STRUCTURE ------------------------------------------------------------------------------------------------
+#define NUM_WHITE_KEYS 7
 #define NUM_BLACK_KEYS 5
 #define START_MIDI_NOTE_C4 60 // MIDI note number for Middle C (C4)
 
 // Key dimensions
-const float WHITE_KEY_WIDTH = 50.0f;
-const float WHITE_KEY_HEIGHT = 150.0f;
-const float BLACK_KEY_WIDTH = 30.0f;
-const float BLACK_KEY_HEIGHT = 90.0f; // Black keys are shorter
+const float WHITE_KEY_WIDTH = 80.0f;
+const float WHITE_KEY_HEIGHT = 240.0f;
+const float BLACK_KEY_WIDTH = 48.0f;
+const float BLACK_KEY_HEIGHT = 144.0f; // Black keys are shorter
 
 // Key structure
 typedef struct {
     SDL_FRect rect;
-    int midi_note;
+    int midi_note; //Note number to identify a key
     double frequency;
     int is_black_key;
     int is_pressed;
 } PianoKey;
 
-// Array to hold all keys (global for easy access in event loop)
+// Array to hold all keys (global for easy access in later functions)
 PianoKey keys[NUM_WHITE_KEYS + NUM_BLACK_KEYS]; // One octave (C to C)
 
-// Function to calculate frequency from MIDI note number
+// Function to calculate frequency from MIDI note number  - Is this required??
 double midi_to_frequency(int midi_note) {
     return 440.0 * pow(2.0, (double)(midi_note - 69) / 12.0);
 }
+
 
 int is_black(int offset_in_octave) {
         return (offset_in_octave == 1 || offset_in_octave == 3 ||
                 offset_in_octave == 6 || offset_in_octave == 8 || offset_in_octave == 10);
 }
-// Initialize the keyboard
+
+// Initialize the keyboard - takes in top left coordinates for the keyboard
 void init_keyboard(float start_x, float start_y) {
-    int key_index = 0;
+    int key_index = 0; //Tracks keys array for the key structs that are being initialised
     float current_x = start_x;
 
     // Define the pattern for white and black keys in one octave (C to C)
     // C, C#, D, D#, E, F, F#, G, G#, A, A#, B
-    int white_key_midi_offsets[] = {0, 2, 4, 5, 7, 9, 11, 12}; // C, D, E, F, G, A, B, C (octave)
-    int black_key_midi_offsets[] = {1, 3, -1, 6, 8, 10, -1}; // C#, D#, F#, G#, A# (-1 for gaps)
+    int white_key_midi_offsets[] = {0, 2, 4, 5, 7, 9, 11}; // C, D, E, F, G, A, B (octave)
+    int black_key_midi_offsets[] = {1, 3, -1, 6, 8, 10}; // C#, D#, F#, G#, A# (-1 for gaps)
 
     // Helper to identify white/black key at a logical index (0=C, 1=C#, etc.)
     
@@ -213,6 +232,8 @@ void init_keyboard(float start_x, float start_y) {
 
     // First, initialize white keys
     float white_key_pos_x = start_x;
+
+    
     for (int i = 0; i < NUM_WHITE_KEYS; ++i) { // C to C (8 keys)
         keys[key_index].midi_note = START_MIDI_NOTE_C4 + white_key_midi_offsets[i];
         keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
@@ -330,6 +351,7 @@ void draw_keyboard(SDL_Renderer *renderer) {
     }
 }
 
+//------------------------------------------------------------------------MAIN FUNCTION---------------------------------------------------------------------------------------------
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
@@ -390,7 +412,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize the keyboard (placed below other controls)
-    init_keyboard(50.0f, 400.0f); // X, Y position for keyboard start
+    init_keyboard(50.0f, 300.0f); // X, Y position for keyboard start
 
     // --- Main Event Loop ---
     SDL_Event e;
