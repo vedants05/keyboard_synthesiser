@@ -54,7 +54,7 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer){
 
 void add_sliders(Slider *filter_slider){
     // Frequency Slider (20Hz to 20000Hz, for finer control from keys)
-    init_slider(filter_slider, 800.0f, 100.0f, 20.0f, 300.0f,
+    init_slider(filter_slider, 800.0f, 100.0f, 30.0f, 400.0f,
                 20.0f, 20000.0f, get_current_frequency(), "Frequency",
                 (void (*)(float))set_synth_frequency);
 
@@ -66,12 +66,12 @@ void add_sliders(Slider *filter_slider){
 }
 
 void add_buttons(Button *button_list) {
-    Button sine = { {50.0f, 50.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
-    Button square = { {160.0f, 50.0f, 100.0f, 40.0f}, "Square", 0, NULL };
-    Button saw = { {270.0f, 50.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
-    Button no_filter = { {50.0f, 100.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
-    Button low_filter = { {160.0f, 100.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
-    Button high_filter = { {270.0f, 100.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
+    Button sine = { {50.0f, 100.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
+    Button square = { {160.0f, 100.0f, 100.0f, 40.0f}, "Square", 0, NULL };
+    Button saw = { {270.0f, 100.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
+    Button no_filter = { {50.0f, 150.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
+    Button low_filter = { {160.0f, 150.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
+    Button high_filter = { {270.0f, 150.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
 
     button_list[0] = sine;
     button_list[1] = square;
@@ -119,7 +119,7 @@ void add_GUI_elements(Slider *filter_slider, Button *button_list){
     }
 
     // Initialize the keyboard (placed below other controls)
-    init_keyboard(50.0f, 300.0f); // X, Y position for keyboard start
+    init_keyboard(50.0f, 260.0f); // X, Y position for keyboard start
 }
 
 void run(SDL_Renderer *renderer){
