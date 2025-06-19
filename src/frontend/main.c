@@ -162,6 +162,7 @@ typedef struct {
     void (*on_click)(void); //Function pointer that requires takes in a function that has void input/outputs and this function is executed when the button is clicked
 } Button;
 
+
 // Render a button - renderer object is responsible for drawing all items in the window
 void draw_button(SDL_Renderer *renderer, Button *button) {
     if (button->is_selected) {
