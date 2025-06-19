@@ -60,35 +60,13 @@ if(WIN32)
         gdi32      # Graphics
         shell32    # Shell API
     )
-    target_link_libraries(gui_test PRIVATE
-        # SDL3 and SDL3_ttf will pull in most of these automatically via their own
-        # CMake config files (if properly set up).
-        # However, for tricky cases like HarfBuzz's C++ dependency,
-        # it's often necessary to explicitly add them here, AND crucially,
-        # ensure stdc++ is LAST.
-
-        # Libraries that *might* be explicitly needed or improve linker order:
-        # These are commonly needed by SDL and its extensions on Windows/MinGW
-        # And ensure HarfBuzz/Freetype are listed BEFORE stdc++
-        harfbuzz     # Explicitly list harfbuzz
-        freetype     # Explicitly list freetype
-
-        # Other transitive dependencies from pacman installation of SDL/TTF deps
-        # (These are the ones you see in your large linker command that CMake auto-discovered)
-        # It's better to let SDL3_ttf's CMake handle these if it passes them along.
-        # If the problem persists, you might need to manually list them here,
-        # ensuring they come BEFORE stdc++.
-        usp10 rpcrt4 bz2 png16 z brotlidec brotlicommon glib-2.0 intl ws2_32 shlwapi pcre2-8 graphite2
-
-        # Core Windows system libraries
-        kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 dinput8 winspool comdlg32
-
-        # C++ Standard Library and Math Library - THESE MUST BE LAST
-        stdc++ # C++ standard library
-        m      # Math library (usually just '-lm' on Unix, but useful to keep in mind)
-    )
 
 endif()
+
+target_link_libraries(gui_test PRIVATE
+        harfbuzz     # Explicitly list harfbuzz
+        freetype  
+    )
 
 
 if(BUILD_KEYBOARD_TEST)
