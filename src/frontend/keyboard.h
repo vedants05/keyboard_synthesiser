@@ -20,6 +20,7 @@ typedef struct {
     double frequency;
     int is_black_key;
     int is_pressed;
+    SDL_Scancode scancode;
 } PianoKey;
 
 
@@ -29,5 +30,9 @@ void init_keyboard(float start_x, float start_y);
 void handle_key_press(int mouse_x, int mouse_y);
 void handle_key_release(int mouse_x, int mouse_y);
 void draw_keyboard(SDL_Renderer *renderer);
+
+//Key presses on computer keyboard
+void handle_physical_key_up(SDL_Scancode scancode);
+void handle_physical_key_down(SDL_Scancode scancode);
 
 #endif
