@@ -12,6 +12,10 @@ int init_SDL(void){
         fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
         return 1;
     }
+    if (TTF_Init() < 0) {
+    SDL_Log("TTF_Init failed: %s", SDL_GetError());
+    return 1;
+    }
     return 0;
 }
 
@@ -127,6 +131,9 @@ void run(SDL_Renderer *renderer){
     Button low_filter_button;
     Button high_filter_button;
 
+    TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 20);
+
+
     //Creating a button list
     Button buttons[NO_OF_BUTTONS];
 
@@ -239,7 +246,7 @@ void run(SDL_Renderer *renderer){
             draw_slider(renderer, &filter_slider);
 
             for (int i = 0; i < NO_OF_BUTTONS; i++) {
-                draw_button(renderer, &buttons[i]);
+                draw_button(renderer,font, &buttons[i]);
             }
             
 
@@ -250,7 +257,6 @@ void run(SDL_Renderer *renderer){
             SDL_RenderPresent(renderer);
         }
 
-       
 }
 
 
