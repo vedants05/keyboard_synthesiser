@@ -23,20 +23,21 @@ extern void init_synth_filter(Biquad *f, int sample_rate, FilterType type, float
 // Live updates from user input
 extern void set_filter_cutoff(Biquad *f, float cutoff);
 extern void set_filter_resonance(Biquad *f, float Q);
+extern void set_filter_type(Biquad *f, FilterType filter_type);
 extern void apply_biquad(Biquad *f, int16_t *buffer, int bufferlen);
 
 // Function pointer type for filter setup
 typedef void (*FilterSetupFn)(Biquad *filter, int sample_rate, float cutoff, float Q);
 
-void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
-void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
+extern void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
+extern void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate);
 
-void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q);
-void update_coefficients_biquad(Biquad *filter);
-float process_sample(Biquad *filter, float x);
+extern void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q);
+extern void update_coefficients_biquad(Biquad *filter);
+extern float process_sample(Biquad *filter, float x);
 
 // For Python/ctypes unit testing:
-void *malloc_biquad(void);
-void  free_biquad(void *p);
+extern void *malloc_biquad(void);
+extern void free_biquad(void *p);
 
 #endif // FILTERS_H

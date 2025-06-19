@@ -116,3 +116,42 @@ int16_t *generate_square(SynthContext *ctx, int num_samples) {
     return buffer;
 }
 
+
+// For Python/ctypes unit testing:
+SynthContext *malloc_synth_context(int   sample_rate,
+                                   double frequency,
+                                   int    current_amplitude,
+                                   int    max_amplitude,
+                                   wave_t wave_type)
+{
+    SynthContext *ctx = malloc(sizeof(SynthContext));
+    if (!ctx) return NULL;
+
+    ctx->format             = SDL_AUDIO_S16;
+    ctx->channels           = 1;
+    ctx->sample_rate        = sample_rate;
+    ctx->frequency          = frequency;
+    ctx->current_amplitude  = current_amplitude;
+    ctx->max_amplitude      = max_amplitude;
+    ctx->phase              = 0.0;
+    ctx->wave_type          = wave_type;
+
+    ctx->filter = malloc(sizeof(Biquad));
+    if (ctx->filter) {
+        init_synth_filter(ctx->filter,
+                          sample_rate,
+                          LPF,
+                          20000.0f,
+                          0.707f);
+    }
+    return ctx;
+}
+
+void free_synth_context(SynthContext *ctx)
+{
+    if (!ctx) return;
+    if (ctx->filter) {
+        free(ctx->filter);
+    }
+    free(ctx);
+}
