@@ -10,7 +10,7 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES .a .lib ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(BUILD_SHARED_LIBS OFF) 
 
 add_subdirectory(third_party/sdl3)
-add_subdirectory(third_party/sdl_ttf)
+add_subdirectory(third_party/sdl_ttf-main)
 # Source files
 set(SHARED_SOURCES
         src/backend/audio.c
