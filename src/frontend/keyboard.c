@@ -46,7 +46,7 @@ void init_keyboard(float start_x, float start_y) {
     float white_key_pos_x = start_x;
 
     
-    for (int i = 0; i < NUM_WHITE_KEYS; ++i) { // C to C (8 keys)
+    for (int i = 0; i < NUM_WHITE_KEYS; i++) { // C to C (8 keys)
         keys[key_index].midi_note = START_MIDI_NOTE_C4 + white_key_midi_offsets[i];
         keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
         keys[key_index].is_black_key = 0;
@@ -64,10 +64,10 @@ void init_keyboard(float start_x, float start_y) {
     // G# is between G and A
     // A# is between A and B
     key_index = NUM_WHITE_KEYS; // Start adding black keys after white keys
-    float black_key_offset_x[] = {0.65f, 1.65f, 3.65f, 4.65f, 5.65f}; // Offsets from start of white key
+    float black_key_offset_x[] = {1.0f, 3.0f, 4.0f, 6.0f, 7.0f}; // Offsets from start of white key
     int black_key_midi_notes[] = {61, 63, 66, 68, 70}; // C#4, D#4, F#4, G#4, A#4
 
-    for (int i = 0; i < NUM_BLACK_KEYS; ++i) {
+    for (int i = 0; i < NUM_BLACK_KEYS; i++) {
         keys[key_index].midi_note = black_key_midi_notes[i];
         keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
         keys[key_index].is_black_key = 1;
@@ -120,7 +120,7 @@ void handle_key_press(int mouse_x, int mouse_y) {
 void handle_key_release(int mouse_x, int mouse_y) {
     // Reset all pressed keys for a simpler monophonic release model
     // For polyphony, you'd track which key was pressed and release only that one.
-    for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; ++i) {
+    for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
         if (keys[i].is_pressed) {
             keys[i].is_pressed = 0;
         }

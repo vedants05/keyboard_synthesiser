@@ -14,7 +14,7 @@ void init_slider(Slider *slider, float x, float y, float width, float height,
 
     // Calculate initial handle position based on initial_val relative to min/max - transforms intital_val into its position on slider between 0 and 1
     float initial_norm_pos = (initial_val - min_val) / (max_val - min_val);
-    slider->handle_rect = (SDL_FRect){x - width / 2, y + height * (1.0f - initial_norm_pos) - 10, width * 2, 20.0f}; //Calculating handle position relative to slider track
+    slider->handle_rect = (SDL_FRect){x - width - 7.5, y + height * (1.0f - initial_norm_pos) - 10, width * 3.5, 20.0f}; //Calculating handle position relative to slider track
 
     slider->value = initial_norm_pos; // Normalized 0.0-1.0
     slider->min_val = min_val;

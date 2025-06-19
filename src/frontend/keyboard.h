@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-#define NUM_WHITE_KEYS 7
+#define NUM_WHITE_KEYS 8
 #define NUM_BLACK_KEYS 5
 #define START_MIDI_NOTE_C4 60 // MIDI note number for Middle C (C4)
 
