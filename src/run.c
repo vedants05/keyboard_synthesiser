@@ -243,7 +243,7 @@ void run(SDL_Renderer *renderer){
             SDL_RenderClear(renderer);
 
             // Draw GUI elements
-            draw_slider(renderer, &filter_slider);
+            draw_slider(renderer, font, &filter_slider);
 
             for (int i = 0; i < NO_OF_BUTTONS; i++) {
                 draw_button(renderer,font, &buttons[i]);
@@ -256,7 +256,6 @@ void run(SDL_Renderer *renderer){
             // Update the screen
             SDL_RenderPresent(renderer);
         }
-
 }
 
 
