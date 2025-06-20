@@ -1,50 +1,33 @@
 /*
-This is the main file
+Integrated Synth with GUI
 
 USAGE:
 Build and run this file
-S = A and K = G, with all the notes in between, including sharps and flats
-1 = Sine wave
-2 = Square wave
-3 = Saw wave
-Arrow up = Increase filter cutoff
-Arrow down = Decrease filter cutoff
-] = octave up 
-[ = octave down
+- Use the GUI keyboard (click keys) or physical keyboard
+- Physical keys: S = A, D = B, F = C, G = D, H = E, J = F, K = G (with sharps on E,T,Y,I,O)
+- Click buttons to change waveform and filter
+- Use slider to adjust frequency
+- ESC to exit
 
 */
-
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "synth.h"
-#include "backend/utils.h"
-#include "backend/state.h"
-
+#include "run.h"
 
 int main(void) {
-    // 1. Initialise SDL
-    printf("Initialising SDL...\n");
-    if (initialise_sdl() != 0) {
-        exit(1); // error already printed 
-    }    
-
-    // 2. create and run window
-    bool running = true;
-    SDL_Event event;
-    user_state_t user_state;
-
-    user_state.octave = 4;
+    printf("Starting Integrated Synth with GUI...\n");
     
-    printf("Running program...\n");
-    int r = run_synth(&running, &event, &user_state);
-
-    if (r != 0) {
-        return 1; // error already printed
+    // Use the GUI main function which now includes audio backend
+    int result = gui_main(0, NULL);
+    
+    if (result != 0) {
+        printf("Program terminated with error\n");
+        return 1;
     }
 
     printf("Program terminated successfully\n");
-
     return 0;
 }

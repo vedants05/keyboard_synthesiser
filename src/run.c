@@ -60,7 +60,7 @@ void add_sliders(Slider *filter_slider){
     // Filter Cutoff Slider (100Hz to 20000Hz)
     init_slider(filter_slider, 800.0f, 100.0f, 30.0f, 400.0f,
                 100.0f, 20000.0f, 2000.0f, "Filter Cutoff",
-                NULL); 
+                NULL); // We'll handle this manually in the event loop
 
     // // Volume Slider (0.0 to 1.0)
     // init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
@@ -362,22 +362,63 @@ int gui_main(int argc, char* argv[]) {
 
     // Initialize audio backend
     SynthContext *ctx = malloc(sizeof(SynthContext));
-    SDL_AudioStream *stream = audio_backend_start(ctx);
+    if (!ctx) {
+        fprintf(stderr, "Failed to allocate synth context\n");
+        cleanup(window, renderer);
+        return 1;
+    }
+
+    ctx->frequency = 440.0;
+    ctx->current_amplitude = 0;  // Start silent
+    ctx->max_amplitude = 3000;
+    ctx->phase = 0;
+    ctx->wave_type = SINE;
+
+    SDL_AudioSpec spec = {
+        .freq = 48000,
+        .format = SDL_AUDIO_S16,
+        .channels = 1
+    };
+    ctx->format = spec.format;
+    ctx->channels = spec.channels;
+    ctx->sample_rate = spec.freq;
+
+    // Allocate and initialize filter
+    ctx->filter = malloc(sizeof(Biquad));
+    if (!ctx->filter) {
+        fprintf(stderr, "Failed to allocate filter memory\n");
+        free(ctx);
+        cleanup(window, renderer);
+        return 1;
+    }
+    init_synth_filter(ctx->filter, 48000, LPF, 2000.0f, 0.707f);
+
+    // Connect frontend to backend
+    init_audio_backend(ctx);
+
+    // Create audio stream
+    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
+        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+        &spec,
+        synth_callback,
+        ctx
+    );
+
     if (!stream) {
+        fprintf(stderr, "Failed to open audio stream: %s\n", SDL_GetError());
         free(ctx->filter);
         free(ctx);
         cleanup(window, renderer);
         return 1;
     }
 
-    // Connect frontend to backend
-    init_audio_backend(ctx);
+    SDL_ResumeAudioStreamDevice(stream);
 
     // Run the GUI
     run(renderer, ctx);
 
     // Cleanup
-    audio_backend_stop(stream);
+    SDL_DestroyAudioStream(stream);
     free(ctx->filter);
     free(ctx);
     cleanup(window, renderer);
