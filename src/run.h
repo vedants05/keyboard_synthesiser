@@ -16,6 +16,5 @@ void add_sliders(Slider *freq_slider);
 void add_buttons(Button *buttons);
 void add_GUI_elements(Slider *freq_slider, Button *buttons);
 void run(SDL_Renderer *renderer, SynthContext *ctx);
-int gui_main(int argc, char* argv[]);
 
 #endif

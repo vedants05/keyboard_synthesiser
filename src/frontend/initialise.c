@@ -19,7 +19,7 @@ int init_SDL(void){
 int init_window(SDL_Window **window){
     *window = SDL_CreateWindow(
         "Synth34",
-        900, // Width to accommodate keyboard
+        900, // Width 
         600, // Height
         SDL_WINDOW_RESIZABLE
     );
@@ -85,7 +85,7 @@ void add_GUI_elements(Slider *filter_slider, Button *button_list){
         button_list[5].is_selected  = 1;
     }
 
-    // Initialize the keyboard (placed below other controls)
-    init_keyboard(50.0f, 260.0f); // X, Y position for keyboard start
+    // Initialize the keyboard
+    init_keyboard(50.0f, 260.0f); // x,y position for keyboard start
 }
 

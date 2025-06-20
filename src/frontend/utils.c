@@ -4,9 +4,8 @@
 #include "../backend/audio.h"
 #include "../backend/filters.h"
 
-//static double current_backend_frequency = 440.0;
-static double current_backend_volume = 0.8;
 
+static double current_backend_volume = 0.8;
 static waveform current_waveform_type = GUI_SINE; //DEFAULT TO SINE
 static filter_type current_filter_type = GUI_NO_FILTER; //DEFAULT TO NO FILTER
 

@@ -14,5 +14,6 @@ typedef struct {
 
 void draw_button(SDL_Renderer *renderer,TTF_Font *font, Button *button);
 void add_buttons(Button *button_list);
+void add_button_text(SDL_Renderer *renderer, TTF_Font *font, Button *button);
 
 #endif

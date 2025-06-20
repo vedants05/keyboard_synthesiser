@@ -61,7 +61,6 @@ void update_slider_from_mouse(Slider *slider, int mouse_y) {
 }
 
 void update_slider_from_key(Slider *slider, int key_direction, float step_size) {
-    // key_direction: 1 for UP, -1 for DOWN
 
     float handle_y_min = slider->track_rect.y;
     float handle_y_max = slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h;
@@ -87,7 +86,7 @@ void update_slider_from_key(Slider *slider, int key_direction, float step_size) 
         } else {
             normalized_pos = 1.0f - ((slider->handle_rect.y - handle_y_min) / (handle_y_max - handle_y_min));
         }
-        slider->value = normalized_pos; // Normalized 0.0-1.0
+        slider->value = normalized_pos; // Normalized 0.0-1.0 done with ratio
 
         // Actual value relative to actual numbers for the slider
         float actual_value = slider->min_val + normalized_pos * (slider->max_val - slider->min_val);
@@ -108,58 +107,50 @@ void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider) {
     // Draw handle (white)
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderFillRect(renderer, &slider->handle_rect);
+    add_slider_text(renderer, font, slider);
 
-    SDL_Color text_colour = {0, 0, 0, 255}; // White text color (RGBA)
+}
 
-    // TODO: Add text label using SDL_ttf
-     SDL_Surface *text_surface = TTF_RenderText_Solid(font, slider->label,strlen(slider->label) ,text_colour);
+void add_slider_text(SDL_Renderer *renderer, TTF_Font *font, Slider *slider){
+    SDL_Color text_colour = {0, 0, 0, 255}; // black text color (RGBA)
+
+    SDL_Surface *text_surface = TTF_RenderText_Solid(font, slider->label,strlen(slider->label) ,text_colour);
     if (text_surface == NULL) {
-        // FIX 2: Use SDL_LogMessage for proper SDL3 logging with categories/priorities.
-        // TTF_GetError() is the correct function to get SDL_ttf specific error messages.
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
                        "Failed to render text surface: %s", SDL_GetError());
         return;
     }
 
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-    // FIX 3: SDL_FreeSurface has been renamed to SDL_DestroySurface in SDL3.
-    SDL_DestroySurface(text_surface); // Free the surface immediately after creating the texture
-    // Set to NULL to prevent dangling pointer if you keep 'text_surface' around
+    SDL_DestroySurface(text_surface);
     text_surface = NULL;
 
     if (!text_texture) {
-        // FIX 4: Use SDL_LogMessage for proper SDL3 logging.
-        // SDL_GetError() is the correct function to get core SDL error messages.
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
                        "Failed to create texture from text: %s", SDL_GetError());
         return;
     }
 
-    float text_width_f, text_height_f; // Use floats for the new function
+    float text_width_f, text_height_f; 
     if (!SDL_GetTextureSize(text_texture, &text_width_f, &text_height_f)) {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
                        "Failed to get texture size: %s", SDL_GetError());
-        SDL_DestroyTexture(text_texture); // Clean up before returning
+        SDL_DestroyTexture(text_texture);
         return;
     }
 
-    // Convert float dimensions to int for centering calculation if needed,
-    // or keep them as floats for direct use in SDL_FRect.
+    //convert the float into int variables 
     int text_width = (int)text_width_f;
     int text_height = (int)text_height_f;
 
-    // 2. Center the text in the slider using SDL_FRect
     SDL_FRect text_rect = {
         slider->handle_rect.x + (slider->handle_rect.w - text_width_f) / 2.0f,
         slider->handle_rect.y + (slider->handle_rect.h - text_height_f) / 2.0f,
         text_width_f,
         text_height_f
     };
-
-    // FIX 2: SDL_RenderCopy has been renamed to SDL_RenderTexture in SDL3.
     SDL_RenderTexture(renderer, text_texture, NULL, &text_rect);
 
-    // 3. Destroy the text texture after rendering
     SDL_DestroyTexture(text_texture);
     text_texture = NULL;
 }
