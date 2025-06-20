@@ -26,7 +26,6 @@ int16_t *generate_sine(SynthContext *ctx, int num_samples) {
     double frequency = ctx->frequency;    
     int start_phase = ctx->phase;
 
-    // REMEMBER TO FREE BUFFER
     int16_t *buffer = malloc(num_samples * sizeof(int16_t));
     if (!buffer) {
         fprintf(stderr, "Could not allocate audio buffer\n");
@@ -66,7 +65,6 @@ int16_t *generate_saw(SynthContext *ctx, int num_samples) {
     double frequency = ctx->frequency;
     int start_phase = ctx->phase;
 
-    // REMEMBER TO FREE BUFFER
     int16_t *buffer = malloc(num_samples * sizeof(int16_t));
     if (!buffer) {
         fprintf(stderr, "Could not allocate audio buffer\n");
@@ -99,7 +97,6 @@ int16_t *generate_square(SynthContext *ctx, int num_samples) {
     double frequency = ctx->frequency;
     int start_phase = ctx->phase;
 
-    // REMEMBER TO FREE BUFFER
     int16_t *buffer = malloc(num_samples * sizeof(int16_t));
     if (!buffer) {
         fprintf(stderr, "Could not allocate audio buffer\n");
