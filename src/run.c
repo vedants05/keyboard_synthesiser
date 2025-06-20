@@ -130,8 +130,8 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                         filter_slider.is_dragging = 1;
                     }
 
-
-                    for (int i = 0; i < NO_OF_BUTTONS/2; i++) {
+                    // Waveform buttons 
+                    for (int i = 0; i < 3; i++) { // number of buttons used for waveform
                         SDL_Rect button_rect = {
                             (int)buttons[i].rect.x, (int)buttons[i].rect.y,
                             (int)buttons[i].rect.w, (int)buttons[i].rect.h
@@ -153,8 +153,8 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                             }
                         }
                     }
-
-                    for (int i = 3; i < NO_OF_BUTTONS; i++) {
+                    // Filter buttons
+                    for (int i = 3; i < 6; i++) { // number of filter options 
                         SDL_Rect button_rect = {
                             (int)buttons[i].rect.x, (int)buttons[i].rect.y,
                             (int)buttons[i].rect.w, (int)buttons[i].rect.h
@@ -176,6 +176,27 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                             }
                         }
                     }
+                    //octave controls 
+                    for (int i = 6; i < NO_OF_BUTTONS; i++) { // number of octave controls
+                        SDL_Rect button_rect = {
+                            (int)buttons[i].rect.x, (int)buttons[i].rect.y,
+                            (int)buttons[i].rect.w, (int)buttons[i].rect.h
+                        };
+                        if (SDL_PointInRect(&mouse_point, &button_rect)) {
+                            // Handle octave buttons 
+                            if (i == 6) {
+                                change_octave_down();
+                            } else {
+                                change_octave_up();
+                            }
+
+                            // Update is_selected state for octave buttons
+                            for (int j = 6; j <= 7; j++) {
+                                buttons[j].is_selected = (i == j);
+                            }
+                        }
+                    }
+
 
                     // Handle keyboard presses (if not dragging a slider)
                     if (!filter_slider.is_dragging ) {
@@ -209,7 +230,12 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
             draw_slider(renderer, font, &filter_slider);
 
             for (int i = 0; i < NO_OF_BUTTONS; i++) {
-                draw_button(renderer,font, &buttons[i]);
+                if (i > 5){
+                    TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 40);
+                    draw_button(renderer,font, &buttons[i]);
+                } else {
+                    draw_button(renderer,font, &buttons[i]);
+                }
             }
             
 

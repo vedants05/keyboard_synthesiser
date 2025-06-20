@@ -6,7 +6,7 @@
 #include "frontend/button.h"
 #include "backend/state.h"
 
-#define NO_OF_BUTTONS 6
+#define NO_OF_BUTTONS 8
 
 extern int init_SDL(void);
 int init_window(SDL_Window **window);
