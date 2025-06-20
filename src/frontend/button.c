@@ -6,7 +6,6 @@
 
 // Render a button - renderer object is responsible for drawing all items in the window
 void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
-    // 1. Draw the button background
     if (button->is_selected) {
         SDL_SetRenderDrawColor(renderer, 0x00, 0xAA, 0x00, 0xFF); // Green if selected
     } else {
@@ -14,25 +13,23 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
     }
     SDL_RenderFillRect(renderer, &button->rect);
 
-    // 2. Draw the button border
+  
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF); // White border
     SDL_RenderRect(renderer, &button->rect); // Draws the outline
+    add_button_text(renderer, font, button);
+}
 
-    // 3. Render and draw the text label
+void add_button_text(SDL_Renderer *renderer, TTF_Font *font, Button *button){
     SDL_Color text_colour = {255, 255, 255, 255}; // White text color (RGBA)
-
     SDL_Surface *text_surface = TTF_RenderText_Solid(font, button->label,strlen(button->label) ,text_colour);
     if (text_surface == NULL) {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
                        "Failed to render text surface: %s", SDL_GetError());
         return;
     }
-
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
     SDL_DestroySurface(text_surface);
-
     text_surface = NULL;
-
     if (!text_texture) {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR,
                        "Failed to create texture from text: %s", SDL_GetError());
@@ -51,7 +48,6 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
     int text_width = (int)text_width_f;
     int text_height = (int)text_height_f;
 
-    // 2. Center the text in the button using SDL_FRect
     SDL_FRect text_rect = {
         button->rect.x + (button->rect.w - text_width_f) / 2.0f,
         button->rect.y + (button->rect.h - text_height_f) / 2.0f,
@@ -61,7 +57,6 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
 
     SDL_RenderTexture(renderer, text_texture, NULL, &text_rect);
 
-    // 3. Destroy the text texture after rendering
     SDL_DestroyTexture(text_texture);
     text_texture = NULL;
 }
