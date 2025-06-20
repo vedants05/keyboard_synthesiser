@@ -73,6 +73,9 @@ void add_buttons(Button *button_list) {
     Button no_filter = { {50.0f, 150.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
     Button low_filter = { {160.0f, 150.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
     Button high_filter = { {270.0f, 150.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
+    Button decrease_octave = { {490.0f, 100.0f, 90.0f, 90.0f}, "-", 0, NULL };
+    Button increase_octave = { {590.0f, 100.0f, 90.0f, 90.0f}, "+", 0, NULL };
+    
 
     button_list[0] = sine;
     button_list[1] = square;
@@ -80,4 +83,6 @@ void add_buttons(Button *button_list) {
     button_list[3] = no_filter;
     button_list[4] = low_filter;
     button_list[5] = high_filter;
+    button_list[6] = decrease_octave;
+    button_list[7] = increase_octave;
 }
