@@ -17,7 +17,6 @@ int init_SDL(void){
 }
 
 int init_window(SDL_Window **window){
-    // --- Window and Renderer Setup ---
     *window = SDL_CreateWindow(
         "Synth34",
         900, // Width to accommodate keyboard
