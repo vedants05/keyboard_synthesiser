@@ -29,18 +29,13 @@ set(SHARED_SOURCES_2
 
 add_executable(synth 
     src/synth.c
+    src/run.c
     ${SHARED_SOURCES}
+    ${SHARED_SOURCES_2}
     )
 
-target_link_libraries(synth PRIVATE SDL3-static)
+target_link_libraries(synth PRIVATE SDL3-static SDL3_ttf-static)
 target_compile_definitions(synth PRIVATE SDL_STATIC)
-
-add_executable(gui_test 
-    src/run.c
-    ${SHARED_SOURCES_2}
-)
-target_link_libraries(gui_test PRIVATE SDL3-static SDL3_ttf-static)
-target_compile_definitions(gui_test PRIVATE SDL_STATIC)
 
 # Optional test
 option(BUILD_KEYBOARD_TEST "Build keyboard test" OFF)
@@ -69,23 +64,24 @@ if(APPLE)
     pkg_check_modules(HARFBUZZ REQUIRED harfbuzz)
     pkg_check_modules(FREETYPE REQUIRED freetype2)
 
-    target_link_libraries(gui_test PRIVATE
+    target_link_libraries(synth PRIVATE
             ${HARFBUZZ_LIBRARIES}
             ${FREETYPE_LIBRARIES}
         )
 
-    target_include_directories(gui_test PRIVATE
+    target_include_directories(synth PRIVATE
             ${HARFBUZZ_INCLUDE_DIRS}
             ${FREETYPE_INCLUDE_DIRS}
         )
 
-    target_link_directories(gui_test PRIVATE
+    target_link_directories(synth PRIVATE
             ${HARFBUZZ_LIBRARY_DIRS}
             ${FREETYPE_LIBRARY_DIRS}
         )
+
 else()
     # For Windows and other platforms
-    target_link_libraries(gui_test PRIVATE
+    target_link_libraries(synth PRIVATE
             harfbuzz
             freetype  
         )
