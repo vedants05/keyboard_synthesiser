@@ -20,7 +20,6 @@ void init_audio_backend(SynthContext *ctx) {
 void set_synth_frequency(double freq) {
     if (freq < 20.0) freq = 20.0; // Min frequency
     if (freq > 20000.0) freq = 20000.0; // Max frequency (increased range for keyboard)
-    //current_backend_frequency = freq;
     
     // Update the actual audio backend
     if (global_synth_ctx) {

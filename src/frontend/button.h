@@ -6,7 +6,7 @@
 
 
 typedef struct {
-    SDL_FRect rect; //SDL2 data type that defines a rectangle (stores x,y for height and width) with floating point precision
+    SDL_FRect rect; //SDL3 data type that defines a rectangle (stores x,y for height and width) with floating point precision
     char *label; //Stores text to be displayed on button
     int is_selected; //Boolean variable tracking state of button
     void (*on_click)(void); //Function pointer that requires takes in a function that has void input/outputs and this function is executed when the button is clicked

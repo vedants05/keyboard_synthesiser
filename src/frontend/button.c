@@ -6,7 +6,7 @@
 
 // Render a button - renderer object is responsible for drawing all items in the window
 void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
-    // 1. Draw the button background
+    // Draw the button background
     if (button->is_selected) {
         SDL_SetRenderDrawColor(renderer, 0x00, 0xAA, 0x00, 0xFF); // Green if selected
     } else {
@@ -14,11 +14,11 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
     }
     SDL_RenderFillRect(renderer, &button->rect);
 
-    // 2. Draw the button border
+    // Draw the button border
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF); // White border
     SDL_RenderRect(renderer, &button->rect); // Draws the outline
 
-    // 3. Render and draw the text label
+    // Drawing the text label
     SDL_Color text_colour = {255, 255, 255, 255}; // White text color (RGBA)
 
     SDL_Surface *text_surface = TTF_RenderText_Solid(font, button->label,strlen(button->label) ,text_colour);
@@ -51,7 +51,7 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
     int text_width = (int)text_width_f;
     int text_height = (int)text_height_f;
 
-    // 2. Center the text in the button using SDL_FRect
+    //Center the text in the button using SDL_FRect
     SDL_FRect text_rect = {
         button->rect.x + (button->rect.w - text_width_f) / 2.0f,
         button->rect.y + (button->rect.h - text_height_f) / 2.0f,
@@ -61,7 +61,7 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
 
     SDL_RenderTexture(renderer, text_texture, NULL, &text_rect);
 
-    // 3. Destroy the text texture after rendering
+    //Destroy the text texture after rendering
     SDL_DestroyTexture(text_texture);
     text_texture = NULL;
 }
