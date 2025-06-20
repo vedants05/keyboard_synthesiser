@@ -5,10 +5,10 @@
 #include "../backend/notes.h"
 
 
-// Global flag to indicate if a note is currently playing (for monophonic backend)
+// Global flag to indicate if a note is currently playing 
 static int note_is_playing = 0;
 
-// Global octave offset (can be changed with [ and ] keys)
+// Global octave offset - changed with right and left keys
 static int octave_offset = 0;
 
 //Key dimensions
@@ -17,7 +17,7 @@ const float WHITE_KEY_HEIGHT = 240.0f;
 const float BLACK_KEY_WIDTH = 48.0f;
 const float BLACK_KEY_HEIGHT = 144.0f;
 
-// Array to hold all keys (global for easy access in later functions)
+// Array to hold all keys 
 PianoKey keys[NUM_WHITE_KEYS + NUM_BLACK_KEYS]; // One octave (C to C)
 
 // Note names for the keys (white keys: A3, B3, C4, D4, E4, F4, G4, A4)
@@ -46,7 +46,7 @@ void get_adjusted_note_name(int key_index, char* result) {
         base_note = black_key_notes[key_index - NUM_WHITE_KEYS];
     }
     
-    // Parse the base note to extract note name and octave
+    // Parsing the base note to extract note name and octave
     char note_name[3] = {0};
     int base_octave;
     
@@ -62,7 +62,7 @@ void get_adjusted_note_name(int key_index, char* result) {
     // Apply octave offset
     int adjusted_octave = base_octave + octave_offset;
     
-    // Clamp to valid octave range (0-8)
+    // Boundary checking
     if (adjusted_octave < 0) adjusted_octave = 0;
     if (adjusted_octave > 8) adjusted_octave = 8;
     
@@ -71,7 +71,7 @@ void get_adjusted_note_name(int key_index, char* result) {
 }
 
 
-// Initialize the keyboard - takes in top left coordinates for the keyboard
+//Initialize the keyboard - takes in top left coordinates for the keyboard
 void init_keyboard(float start_x, float start_y) {
     int key_index = 0; //Tracks keys array for the key structs that are being initialised
 
@@ -79,7 +79,6 @@ void init_keyboard(float start_x, float start_y) {
     float white_key_pos_x = start_x;
     
     for (int i = 0; i < NUM_WHITE_KEYS; i++) { 
-        keys[key_index].midi_note = 0; // No longer used, but keeping for compatibility
         keys[key_index].is_black_key = 0;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){white_key_pos_x, start_y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT};
@@ -93,7 +92,6 @@ void init_keyboard(float start_x, float start_y) {
     float black_key_offset_x[] = {1.0f, 3.0f, 4.0f, 6.0f, 7.0f}; // Offsets from start of white key
 
     for (int i = 0; i < NUM_BLACK_KEYS; i++) {
-        keys[key_index].midi_note = 0; // No longer used, but keeping for compatibility
         keys[key_index].is_black_key = 1;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){start_x + black_key_offset_x[i] * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2,
@@ -168,7 +166,7 @@ void handle_key_press(int mouse_x, int mouse_y) {
         //Get SDL_Rect of a key and compare it to mouse_point
         SDL_Rect key_rect_int = {(int)keys[i].rect.x, (int)keys[i].rect.y,
                                  (int)keys[i].rect.w, (int)keys[i].rect.h};
-        if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
+        if (SDL_PointInRect(&mouse_point, &key_rect_int)) { 
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
                 
@@ -190,7 +188,7 @@ void handle_key_press(int mouse_x, int mouse_y) {
     for (int i = 0; i < NUM_WHITE_KEYS; i++) {
         SDL_Rect key_rect_int = {(int)keys[i].rect.x, (int)keys[i].rect.y,
                                  (int)keys[i].rect.w, (int)keys[i].rect.h};
-        if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
+        if (SDL_PointInRect(&mouse_point, &key_rect_int)) {
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
                 
@@ -212,13 +210,13 @@ void handle_key_press(int mouse_x, int mouse_y) {
 
 // Function to handle key release
 void handle_key_release(int mouse_x, int mouse_y) {
-    // Reset all pressed keys for a simpler monophonic release model
-    // For polyphony, you'd track which key was pressed and release only that one.
+
     for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
         if (keys[i].is_pressed) {
             keys[i].is_pressed = 0;
         }
     }
+    
     // Tell backend to stop sound
     if (note_is_playing) {
         stop_synth_note();
