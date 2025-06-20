@@ -5,18 +5,16 @@
 
 #define NUM_WHITE_KEYS 8
 #define NUM_BLACK_KEYS 5
-#define START_MIDI_NOTE_C4 60 // MIDI note number for Middle C (C4)
 
 // Key dimensions
 extern const float WHITE_KEY_WIDTH;
 extern const float WHITE_KEY_HEIGHT;
 extern const float BLACK_KEY_WIDTH;
-extern const float BLACK_KEY_HEIGHT; // Black keys are shorter
+extern const float BLACK_KEY_HEIGHT; 
 
 // Key structure
 typedef struct {
     SDL_FRect rect;
-    int midi_note; //Note number to identify a key
     int is_black_key; 
     int is_pressed;
     SDL_Scancode scancode; //For physical keyboard input
