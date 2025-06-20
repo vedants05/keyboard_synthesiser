@@ -5,14 +5,18 @@
 #include "frontend/keyboard.h"
 #include "run.h"
 #include "frontend/utils.h"
+#include "backend/audio.h"
+#include "backend/utils.h"
+#include "backend/filters.h"
+#include <stdlib.h>
 
 int init_SDL(void){
-    // Initialize SDL (Video only, as audio is backend)
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    // Initialize SDL with both video and audio
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
         return 1;
     }
-    if (TTF_Init() < 0) {
+    if (!TTF_Init()) {
     SDL_Log("TTF_Init failed: %s", SDL_GetError());
     return 1;
     }
@@ -53,10 +57,10 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer){
 }
 
 void add_sliders(Slider *filter_slider){
-    // Frequency Slider (20Hz to 20000Hz, for finer control from keys)
+    // Filter Cutoff Slider (100Hz to 20000Hz)
     init_slider(filter_slider, 800.0f, 100.0f, 30.0f, 400.0f,
-                20.0f, 20000.0f, get_current_frequency(), "Frequency",
-                (void (*)(float))set_synth_frequency);
+                100.0f, 20000.0f, 2000.0f, "Filter Cutoff",
+                NULL); 
 
     // // Volume Slider (0.0 to 1.0)
     // init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
@@ -89,11 +93,11 @@ void add_GUI_elements(Slider *filter_slider, Button *button_list){
     add_buttons(button_list);
 
     // Set initial waveform button state 
-    if (get_current_waveform_type() == SINE) {
+    if (get_current_waveform_type() == GUI_SINE) {
         button_list[0].is_selected = 1;
         button_list[1].is_selected  = 0;
         button_list[2].is_selected  = 0;
-    } else if (get_current_waveform_type() == SQUARE) {
+    } else if (get_current_waveform_type() == GUI_SQUARE) {
         button_list[0].is_selected = 0;
         button_list[1].is_selected  = 1;
         button_list[2].is_selected  = 0;
@@ -104,11 +108,11 @@ void add_GUI_elements(Slider *filter_slider, Button *button_list){
     }
 
     // Set initial filter type button state 
-    if (get_current_filter_type() == NO_FILTER) {
+    if (get_current_filter_type() == GUI_NO_FILTER) {
         button_list[3].is_selected = 1;
         button_list[4].is_selected  = 0;
         button_list[5].is_selected  = 0;
-    } else if (get_current_filter_type() == LOW_FILTER) {
+    } else if (get_current_filter_type() == GUI_LOW_FILTER) {
         button_list[3].is_selected = 0;
         button_list[4].is_selected  = 1;
         button_list[5].is_selected  = 0;
@@ -122,7 +126,7 @@ void add_GUI_elements(Slider *filter_slider, Button *button_list){
     init_keyboard(50.0f, 260.0f); // X, Y position for keyboard start
 }
 
-void run(SDL_Renderer *renderer){
+void run(SDL_Renderer *renderer, SynthContext *ctx){
     Slider filter_slider;
     Button sine_button;
     Button square_button;
@@ -154,10 +158,84 @@ void run(SDL_Renderer *renderer){
                 quit = 1;
             }
             else if (e.type == SDL_EVENT_KEY_DOWN) {
-                // The e.key.repeat flag is true if this is an auto-repeated key press
-                // We only want to trigger the note on the first press.
-                if (e.key.repeat == 0) {
-                    handle_physical_key_down(e.key.scancode);
+                // Handle special function keys first
+                switch (e.key.key) {
+                    case SDLK_ESCAPE:
+                        quit = 1;
+                        break;
+                    case SDLK_1:
+                        set_synth_waveform(GUI_SINE);
+                        buttons[0].is_selected = 1;
+                        buttons[1].is_selected = 0;
+                        buttons[2].is_selected = 0;
+                        printf("Sine wave selected.\n");
+                        break;
+                    case SDLK_2:
+                        set_synth_waveform(GUI_SQUARE);
+                        buttons[0].is_selected = 0;
+                        buttons[1].is_selected = 1;
+                        buttons[2].is_selected = 0;
+                        printf("Square wave selected.\n");
+                        break;
+                    case SDLK_3:
+                        set_synth_waveform(GUI_SAW);
+                        buttons[0].is_selected = 0;
+                        buttons[1].is_selected = 0;
+                        buttons[2].is_selected = 1;
+                        printf("Saw wave selected.\n");
+                        break;
+                    case SDLK_4: {
+                        // Cycle through filters
+                        filter_type current = get_current_filter_type();
+                        switch (current) {
+                            case GUI_NO_FILTER:
+                                set_synth_filter_type(GUI_LOW_FILTER);
+                                buttons[3].is_selected = 0;
+                                buttons[4].is_selected = 1;
+                                buttons[5].is_selected = 0;
+                                printf("Low pass filter selected\n");
+                                break;
+                            case GUI_LOW_FILTER:
+                                set_synth_filter_type(GUI_HIGH_FILTER);
+                                buttons[3].is_selected = 0;
+                                buttons[4].is_selected = 0;
+                                buttons[5].is_selected = 1;
+                                printf("High pass filter selected\n");
+                                break;
+                            case GUI_HIGH_FILTER:
+                                set_synth_filter_type(GUI_NO_FILTER);
+                                buttons[3].is_selected = 1;
+                                buttons[4].is_selected = 0;
+                                buttons[5].is_selected = 0;
+                                printf("No filter selected\n");
+                                break;
+                        }
+                        break;
+                    }
+                    case SDLK_UP:
+                        if (ctx && ctx->filter) {
+                            set_filter_cutoff(ctx->filter, ctx->filter->cutoff + 500.0f);
+                            printf("Filter cutoff increased to %.1f Hz\n", ctx->filter->cutoff);
+                        }
+                        break;
+                    case SDLK_DOWN:
+                        if (ctx && ctx->filter && ctx->filter->cutoff > 500.0f) {
+                            set_filter_cutoff(ctx->filter, ctx->filter->cutoff - 500.0f);
+                            printf("Filter cutoff decreased to %.1f Hz\n", ctx->filter->cutoff);
+                        }
+                        break;
+                    case SDLK_LEFTBRACKET:
+                        change_octave_down();
+                        break;
+                    case SDLK_RIGHTBRACKET:
+                        change_octave_up();
+                        break;
+                    default:
+                        // Handle piano keys only if not a special function key
+                        if (e.key.repeat == 0) {
+                            handle_physical_key_down(e.key.scancode);
+                        }
+                        break;
                 }
             } 
             else if (e.type == SDL_EVENT_KEY_UP) {
@@ -189,11 +267,11 @@ void run(SDL_Renderer *renderer){
                         if (SDL_PointInRect(&mouse_point, &button_rect)) {
                             // Handle waveform buttons (0 = Sine, 1 = Square, 2 = Saw)
                             if (i == 0) {
-                                set_synth_waveform(SINE);
+                                set_synth_waveform(GUI_SINE);
                             } else if (i == 1) {
-                                set_synth_waveform(SQUARE);
+                                set_synth_waveform(GUI_SQUARE);
                             } else if (i == 2) {
-                                set_synth_waveform(SAW);
+                                set_synth_waveform(GUI_SAW);
                             }
 
                             // Update is_selected state for waveform buttons
@@ -211,11 +289,11 @@ void run(SDL_Renderer *renderer){
                         if (SDL_PointInRect(&mouse_point, &button_rect)) {
                             // Handle filter buttons (3 = No Filter, 4 = Low, 5 = High)
                             if (i == 3) {
-                                set_filter_type(NO_FILTER);
+                                set_synth_filter_type(GUI_NO_FILTER);
                             } else if (i == 4) {
-                                set_filter_type(LOW_FILTER);
+                                set_synth_filter_type(GUI_LOW_FILTER);
                             } else if (i == 5) {
-                                set_filter_type(HIGH_FILTER);
+                                set_synth_filter_type(GUI_HIGH_FILTER);
                             }
 
 
@@ -243,10 +321,12 @@ void run(SDL_Renderer *renderer){
             } else if (e.type == SDL_EVENT_MOUSE_MOTION) {
                 if (filter_slider.is_dragging) {
                     update_slider_from_mouse(&filter_slider, e.motion.y);
-                }
-                } else {
-                    // This logic is for highlighting keys on hover, if you wanted that.
-                    // For now, it's implicitly handled by `handle_key_press` on click.
+                    // Update the filter cutoff based on slider value
+                    if (ctx && ctx->filter) {
+                        float actual_value = filter_slider.min_val + (filter_slider.value * (filter_slider.max_val - filter_slider.min_val));
+                        set_filter_cutoff(ctx->filter, actual_value);
+                        printf("Filter cutoff set to %.1f Hz\n", actual_value);
+                    }
                 }
             }
              // --- Rendering ---
@@ -267,17 +347,39 @@ void run(SDL_Renderer *renderer){
             // Update the screen
             SDL_RenderPresent(renderer);
         }
+    }
 }
 
 
-int main(int argc, char* argv[]) {
+int gui_main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
 
+    // Initialize SDL for both video and audio
     if (init_SDL() != 0) return 1;
     if (init_window(&window) != 0) return 1;
     if (init_renderer(window, &renderer) != 0) return 1;
-    run(renderer);
+
+    // Initialize audio backend
+    SynthContext *ctx = malloc(sizeof(SynthContext));
+    SDL_AudioStream *stream = audio_backend_start(ctx);
+    if (!stream) {
+        free(ctx->filter);
+        free(ctx);
+        cleanup(window, renderer);
+        return 1;
+    }
+
+    // Connect frontend to backend
+    init_audio_backend(ctx);
+
+    // Run the GUI
+    run(renderer, ctx);
+
+    // Cleanup
+    audio_backend_stop(stream);
+    free(ctx->filter);
+    free(ctx);
     cleanup(window, renderer);
 
     return 0;

@@ -2,6 +2,10 @@
 #define RUN_H
 
 #include <SDL3/SDL.h>
+#include "frontend/slider.h"
+#include "frontend/button.h"
+#include "backend/state.h"
+
 #define NO_OF_BUTTONS 6
 
 extern int init_SDL(void);
@@ -11,7 +15,7 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer);
 void add_sliders(Slider *freq_slider);
 void add_buttons(Button *buttons);
 void add_GUI_elements(Slider *freq_slider, Button *buttons);
-void run(SDL_Renderer *renderer);
-
+void run(SDL_Renderer *renderer, SynthContext *ctx);
+int gui_main(int argc, char* argv[]);
 
 #endif
