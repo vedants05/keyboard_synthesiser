@@ -1,14 +1,13 @@
 /*
-Integrated Synth with GUI
-
+This is the main file
 USAGE:
 Build and run this file
-- Use the GUI keyboard (click keys) or physical keyboard
-- Physical keys: S = A, D = B, F = C, G = D, H = E, J = F, K = G (with sharps on E,T,Y,I,O)
-- Click buttons to change waveform and filter
-- Use slider to adjust frequency
-- ESC to exit
+S = A and K = G, with all the notes in between, including sharps and flats
 
+] = octave up 
+[ = octave down
+
+Rest of the controls are in the GUI
 */
 
 #include <stdlib.h>
