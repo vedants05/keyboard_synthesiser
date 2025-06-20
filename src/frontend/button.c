@@ -74,3 +74,19 @@ void draw_button(SDL_Renderer *renderer, TTF_Font *font, Button *button) {
     SDL_DestroyTexture(text_texture);
     text_texture = NULL;
 }
+
+void add_buttons(Button *button_list) {
+    Button sine = { {50.0f, 100.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
+    Button square = { {160.0f, 100.0f, 100.0f, 40.0f}, "Square", 0, NULL };
+    Button saw = { {270.0f, 100.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
+    Button no_filter = { {50.0f, 150.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
+    Button low_filter = { {160.0f, 150.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
+    Button high_filter = { {270.0f, 150.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
+
+    button_list[0] = sine;
+    button_list[1] = square;
+    button_list[2] = saw;
+    button_list[3] = no_filter;
+    button_list[4] = low_filter;
+    button_list[5] = high_filter;
+}

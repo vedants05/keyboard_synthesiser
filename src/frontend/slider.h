@@ -23,4 +23,6 @@ void update_slider_from_mouse(Slider *slider, int mouse_y);
 
 void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider);
 
+void add_sliders(Slider *filter_slider);
+
 #endif

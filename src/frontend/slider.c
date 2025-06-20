@@ -2,8 +2,6 @@
 
 #include "slider.h"
 
-
-
 // Initializing a slider
 void init_slider(Slider *slider, float x, float y, float width, float height,
                  float min_val, float max_val, float initial_val, char *label,
@@ -125,4 +123,12 @@ void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider) {
     // 3. Destroy the text texture after rendering
     SDL_DestroyTexture(text_texture);
     text_texture = NULL;
+}
+
+void add_sliders(Slider *filter_slider){
+    // Filter Cutoff Slider (100Hz to 20000Hz)
+    init_slider(filter_slider, 800.0f, 100.0f, 30.0f, 400.0f,
+                100.0f, 20000.0f, 2000.0f, "Filter Cutoff",
+                NULL); 
+
 }
