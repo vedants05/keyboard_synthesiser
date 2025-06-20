@@ -134,7 +134,6 @@ static void render_gui(SDL_Renderer *renderer, TTF_Font *font, Slider *filter_sl
 
     for (int i = 0; i < NO_OF_BUTTONS; i++) {
         if (i > 5){
-            //TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 40);
             draw_button(renderer,font, &buttons[i]);
         } else {
             draw_button(renderer,font, &buttons[i]);

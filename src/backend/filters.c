@@ -46,6 +46,8 @@ void apply_biquad(Biquad *f, int16_t *buffer, int bufferlen) {
     }
 }
 
+// Both filters use 2 pole structure
+// So there is a -12 dB/octave roll-off above/below the cutoff frequency 
 // Setup function for HPF or LPF Biquad filters
 static void setup_lpf(Biquad *f, int fs, float cutoff, float Q) {
     init_biquad(f, fs, cutoff, Q);
@@ -58,22 +60,7 @@ static void setup_hpf(Biquad *f, int fs, float cutoff, float Q) {
     f->type = HPF;
     update_coefficients_biquad(f);
 }
-// Both filters use 2 pole structure
-// So there is a -12 dB/octave roll-off above/below the cutoff frequency 
 
-// Attenuates frequencies above the cutoff frequency
-void high_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate) {
-    Biquad *filter = malloc(sizeof(Biquad));
-    setup_hpf(filter, sample_rate, cutoff, resonance);
-    apply_biquad(filter, buffer, bufferlen);
-}
-
-// Attenuates frequencies below the cutoff frequency
-void low_pass_filter(int16_t *buffer, int bufferlen, float cutoff, float resonance, int sample_rate) {
-    Biquad *filter = malloc(sizeof(Biquad));
-    setup_lpf(filter, sample_rate, cutoff, resonance);
-    apply_biquad(filter, buffer, bufferlen);
-}
 
 void init_biquad(Biquad *filter, int sample_rate, float cutoff, float Q) {
     filter->fs = sample_rate;

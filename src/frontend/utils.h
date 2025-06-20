@@ -24,7 +24,6 @@ void set_synth_waveform(waveform waveform_type);
 void set_synth_filter_type(filter_type filter);
 void stop_synth_note();
 void start_synth_note(double freq, double vol);
-double get_current_frequency();
 double get_current_volume();
 
 waveform get_current_waveform_type();

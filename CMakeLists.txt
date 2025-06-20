@@ -29,7 +29,6 @@ set(SHARED_SOURCES_2
 )
 
 add_executable(synth 
-    src/synth.c
     src/run.c
     ${SHARED_SOURCES}
     ${SHARED_SOURCES_2}

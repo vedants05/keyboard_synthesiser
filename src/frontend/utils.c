@@ -90,11 +90,6 @@ void start_synth_note(double freq, double vol) {
     set_synth_volume(vol);
 }
 
-
-// double get_current_frequency() {
-//     return current_backend_frequency;
-// }
-
 double get_current_volume() {
     return current_backend_volume;
 }
