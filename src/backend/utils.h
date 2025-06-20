@@ -4,8 +4,6 @@
 #include <SDL3/SDL.h>
 #include "state.h"
 
-extern int initialise_sdl();
-
-extern int run_synth(bool *running, SDL_Event *event, user_state_t *user_state);
+extern void synth_callback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
     
 #endif

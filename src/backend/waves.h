@@ -10,8 +10,6 @@ extern int16_t *generate_square(SynthContext *ctx, int num_samples);
 extern int16_t *generate_saw(SynthContext *ctx, int num_samples);
 
 // Helpers for Python tests:
-
-// Allocate & initialize a SynthContext (with its internal Biquad filter)
 extern SynthContext *malloc_synth_context(int   sample_rate,
                                    double frequency,
                                    int    current_amplitude,
