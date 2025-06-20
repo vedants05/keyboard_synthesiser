@@ -2,6 +2,7 @@
 #include <math.h>
 
 #include "keyboard.h"
+#include "../backend/notes.h"
 
 
 // Global flag to indicate if a note is currently playing (for monophonic backend)
@@ -19,6 +20,10 @@ const float BLACK_KEY_HEIGHT = 144.0f;
 // Array to hold all keys (global for easy access in later functions)
 PianoKey keys[NUM_WHITE_KEYS + NUM_BLACK_KEYS]; // One octave (C to C)
 
+// Note names for the keys (white keys: A3, B3, C4, D4, E4, F4, G4, A4)
+const char* white_key_notes[NUM_WHITE_KEYS] = {"A3", "B3", "C4", "D4", "E4", "F4", "G4", "A4"};
+const char* black_key_notes[NUM_BLACK_KEYS] = {"A#3", "C#4", "D#4", "F#4", "G#4"};
+
 // Map physical keys to virtual piano keys
 const SDL_Scancode white_key_scancodes[NUM_WHITE_KEYS] = {
     SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_F, SDL_SCANCODE_G,
@@ -29,29 +34,52 @@ const SDL_Scancode black_key_scancodes[NUM_BLACK_KEYS] = {
     SDL_SCANCODE_E, SDL_SCANCODE_T, SDL_SCANCODE_Y, SDL_SCANCODE_I, SDL_SCANCODE_O
 };
 
-// Function to calculate frequency from MIDI note number 
-double midi_to_frequency(int midi_note) {
-    return 440.0 * pow(2.0, (double)(midi_note - 69) / 12.0);
+
+// Helper function to get note name with octave offset applied
+void get_adjusted_note_name(int key_index, char* result) {
+    const char* base_note;
+    
+    // Get the base note name
+    if (key_index < NUM_WHITE_KEYS) {
+        base_note = white_key_notes[key_index];
+    } else {
+        base_note = black_key_notes[key_index - NUM_WHITE_KEYS];
+    }
+    
+    // Parse the base note to extract note name and octave
+    char note_name[3] = {0};
+    int base_octave;
+    
+    if (base_note[1] == '#') {
+        note_name[0] = base_note[0];
+        note_name[1] = '#';
+        base_octave = base_note[2] - '0';
+    } else {
+        note_name[0] = base_note[0];
+        base_octave = base_note[1] - '0';
+    }
+    
+    // Apply octave offset
+    int adjusted_octave = base_octave + octave_offset;
+    
+    // Clamp to valid octave range (0-8)
+    if (adjusted_octave < 0) adjusted_octave = 0;
+    if (adjusted_octave > 8) adjusted_octave = 8;
+    
+    // Build the result string
+    sprintf(result, "%s%d", note_name, adjusted_octave);
 }
 
 
 // Initialize the keyboard - takes in top left coordinates for the keyboard
 void init_keyboard(float start_x, float start_y) {
     int key_index = 0; //Tracks keys array for the key structs that are being initialised
-    float current_x = start_x;
 
-    // C, C#, D, D#, E, F, F#, G, G#, A, A#, B
-    int white_key_midi_offsets[] = {0, 2, 4, 5, 7, 9, 11}; // C, D, E, F, G, A, B (octave)
-    int black_key_midi_offsets[] = {1, 3, -1, 6, 8, 10}; // C#, D#, F#, G#, A# (-1 for gaps)
-    
-    // A3 = MIDI 57, B3 = 59, C4 = 60, D4 = 62, E4 = 64, F4 = 65, G4 = 67
-    // A#3 = 58, C#4 = 61, D#4 = 63, F#4 = 66, G#4 = 68
-
+    // Initialize white keys (A3, B3, C4, D4, E4, F4, G4, A4)
     float white_key_pos_x = start_x;
-    int white_key_midi_notes[] = {57, 59, 60, 62, 64, 65, 67, 69}; // A3, B3, C4, D4, E4, F4, G4, A4
     
     for (int i = 0; i < NUM_WHITE_KEYS; i++) { 
-        keys[key_index].midi_note = white_key_midi_notes[i];
+        keys[key_index].midi_note = 0; // No longer used, but keeping for compatibility
         keys[key_index].is_black_key = 0;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){white_key_pos_x, start_y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT};
@@ -60,13 +88,12 @@ void init_keyboard(float start_x, float start_y) {
         key_index++;
     }
 
-
+    // Initialize black keys (A#3, C#4, D#4, F#4, G#4)
     key_index = NUM_WHITE_KEYS; // Start adding black keys after white keys
     float black_key_offset_x[] = {1.0f, 3.0f, 4.0f, 6.0f, 7.0f}; // Offsets from start of white key
-    int black_key_midi_notes[] = {58, 61, 63, 66, 68}; // A#3, C#4, D#4, F#4, G#4
 
     for (int i = 0; i < NUM_BLACK_KEYS; i++) {
-        keys[key_index].midi_note = black_key_midi_notes[i];
+        keys[key_index].midi_note = 0; // No longer used, but keeping for compatibility
         keys[key_index].is_black_key = 1;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){start_x + black_key_offset_x[i] * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2,
@@ -96,17 +123,16 @@ void handle_physical_key_down(SDL_Scancode scancode) {
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
 
-                // Apply octave offset to the frequency
-                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+                // Get the adjusted note name with octave offset
+                char note_name[5];
+                get_adjusted_note_name(i, note_name);
 
-                // Clamp to valid MIDI range (0-127)
-                if (adjusted_midi < 0) adjusted_midi = 0;
-                if (adjusted_midi > 127) adjusted_midi = 127;
-
-                //Calculate frequency from midi value and pass into backend functions
-                double adjusted_frequency = midi_to_frequency(adjusted_midi);
-                start_synth_note(adjusted_frequency, get_current_volume());
-                note_is_playing = 1;
+                // Calculate frequency using the simple note_to_freq function
+                double frequency = note_to_freq(note_name);
+                if (frequency > 0) {
+                    start_synth_note(frequency, get_current_volume());
+                    note_is_playing = 1;
+                }
             }
             return; 
         }
@@ -145,17 +171,17 @@ void handle_key_press(int mouse_x, int mouse_y) {
         if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
-                // Apply octave offset to the frequency
-                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+                
+                // Get the adjusted note name with octave offset
+                char note_name[5];
+                get_adjusted_note_name(i, note_name);
 
-                // Clamp to valid MIDI range (0-127)
-                if (adjusted_midi < 0) adjusted_midi = 0;
-                if (adjusted_midi > 127) adjusted_midi = 127;
-
-                //Calculate frequency from midi value and pass into backend functions
-                double adjusted_frequency = midi_to_frequency(adjusted_midi);
-                start_synth_note(adjusted_frequency, get_current_volume());
-                note_is_playing = 1;
+                // Calculate frequency using the simple note_to_freq function
+                double frequency = note_to_freq(note_name);
+                if (frequency > 0) {
+                    start_synth_note(frequency, get_current_volume());
+                    note_is_playing = 1;
+                }
             }
             return;
         }
@@ -167,17 +193,17 @@ void handle_key_press(int mouse_x, int mouse_y) {
         if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
-                                // Apply octave offset to the frequency
-                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+                
+                // Get the adjusted note name with octave offset
+                char note_name[5];
+                get_adjusted_note_name(i, note_name);
 
-                // Clamp to valid MIDI range (0-127)
-                if (adjusted_midi < 0) adjusted_midi = 0;
-                if (adjusted_midi > 127) adjusted_midi = 127;
-
-                //Calculate frequency from midi value and pass into backend functions
-                double adjusted_frequency = midi_to_frequency(adjusted_midi);
-                start_synth_note(adjusted_frequency, get_current_volume());
-                note_is_playing = 1;
+                // Calculate frequency using the simple note_to_freq function
+                double frequency = note_to_freq(note_name);
+                if (frequency > 0) {
+                    start_synth_note(frequency, get_current_volume());
+                    note_is_playing = 1;
+                }
             }
             return;
         }
