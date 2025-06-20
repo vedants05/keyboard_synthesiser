@@ -23,7 +23,6 @@ typedef struct {
 } PianoKey;
 
 
-double midi_to_frequency(int midi_note);
 void init_keyboard(float start_x, float start_y);
 void handle_key_press(int mouse_x, int mouse_y);
 void handle_key_release(int mouse_x, int mouse_y);
