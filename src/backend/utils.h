@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef BACKEND_UTILS_H
+#define BACKEND_UTILS_H
 
 #include <SDL3/SDL.h>
 #include "state.h"

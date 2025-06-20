@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef FRONTEND_UTILS_H
+#define FRONTEND_UTILS_H
 
 #include <SDL3/SDL.h>
 #include "../backend/state.h"
