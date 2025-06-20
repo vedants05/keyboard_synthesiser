@@ -161,6 +161,7 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
 
     SDL_Event e;
     int quit = 0;
+    float step_size_pixels = filter_slider.track_rect.h * 0.025f;
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_EVENT_QUIT) {
@@ -185,12 +186,10 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                         cycle_filter_type(buttons);
                         break;
                     case SDLK_UP:
-                        float step_size_pixels = filter_slider.track_rect.h * 0.025f;
                         update_slider_from_key(&filter_slider, -1, step_size_pixels);
                         adjust_filter_cutoff(ctx, 500.0f);
                         break;
                     case SDLK_DOWN:
-                        float step_size_pixels = filter_slider.track_rect.h * 0.025f;
                         update_slider_from_key(&filter_slider, 1, step_size_pixels);
                         adjust_filter_cutoff(ctx, -500.0f);
                         break;
