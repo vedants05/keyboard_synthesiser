@@ -12,6 +12,7 @@
 #include "backend/utils.h"
 #include "backend/filters.h"
 
+
 // Helper function to update button selection states for waveform buttons
 static void update_waveform_button_states(Button buttons[], int selected_index) {
     for (int i = 0; i <= 2; i++) {
@@ -101,6 +102,26 @@ static void handle_button_interactions(SDL_Point mouse_point, Button buttons[]) 
             return;
         }
     }
+
+    //octave controls 
+    for (int i = 6; i < NO_OF_BUTTONS; i++) { // number of octave controls
+        SDL_Rect button_rect = {
+            (int)buttons[i].rect.x, (int)buttons[i].rect.y,
+            (int)buttons[i].rect.w, (int)buttons[i].rect.h
+        };
+        if (SDL_PointInRect(&mouse_point, &button_rect)) {
+            // Handle octave buttons 
+            if (i == 6) {
+                change_octave_down();
+            } else {
+                change_octave_up();
+            }
+            // Update is_selected state for octave buttons
+            for (int j = 6; j <= 7; j++) {
+                buttons[j].is_selected = (i == j);
+            }
+        }
+    }
 }
 
 // Helper function to render all GUI elements
@@ -112,7 +133,12 @@ static void render_gui(SDL_Renderer *renderer, TTF_Font *font, Slider *filter_sl
     draw_slider(renderer, font, filter_slider);
 
     for (int i = 0; i < NO_OF_BUTTONS; i++) {
-        draw_button(renderer, font, &buttons[i]);
+        if (i > 5){
+            TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 40);
+            draw_button(renderer,font, &buttons[i]);
+        } else {
+            draw_button(renderer,font, &buttons[i]);
+        }
     }
 
     // Draw the keyboard
@@ -159,15 +185,23 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                         cycle_filter_type(buttons);
                         break;
                     case SDLK_UP:
+                        float step_size_pixels = filter_slider.track_rect.h * 0.025f;
+                        update_slider_from_key(&filter_slider, -1, step_size_pixels);
                         adjust_filter_cutoff(ctx, 500.0f);
                         break;
                     case SDLK_DOWN:
+                        float step_size_pixels = filter_slider.track_rect.h * 0.025f;
+                        update_slider_from_key(&filter_slider, 1, step_size_pixels);
                         adjust_filter_cutoff(ctx, -500.0f);
                         break;
-                    case SDLK_LEFTBRACKET:
+                    case SDLK_LEFT:
+                        buttons[6].is_selected = 1;
+                        buttons[7].is_selected = 0;
                         change_octave_down();
                         break;
-                    case SDLK_RIGHTBRACKET:
+                    case SDLK_RIGHT:
+                        buttons[6].is_selected = 0;
+                        buttons[7].is_selected = 1;
                         change_octave_up();
                         break;
                     default:
@@ -197,10 +231,9 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                         filter_slider.is_dragging = 1;
                     }
 
-
                     // Handle button interactions using helper function
                     handle_button_interactions(mouse_point, buttons);
-
+                    
                     // Handle keyboard presses (if not dragging a slider)
                     if (!filter_slider.is_dragging ) {
                         handle_key_press(e.button.x, e.button.y); // mouse_x, mouse_y are ints already
@@ -225,6 +258,7 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                     }
                 }
             }
+
             // --- Rendering ---
             render_gui(renderer, font, &filter_slider, buttons);
         }

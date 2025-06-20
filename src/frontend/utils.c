@@ -106,3 +106,4 @@ waveform get_current_waveform_type() {
 filter_type get_current_filter_type() {
     return current_filter_type;
 }
+
