@@ -13,5 +13,6 @@ typedef struct {
 } Button;
 
 void draw_button(SDL_Renderer *renderer,TTF_Font *font, Button *button);
+void add_buttons(Button *button_list);
 
 #endif

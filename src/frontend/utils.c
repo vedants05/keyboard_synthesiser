@@ -4,7 +4,7 @@
 #include "../backend/audio.h"
 #include "../backend/filters.h"
 
-static double current_backend_frequency = 440.0;
+//static double current_backend_frequency = 440.0;
 static double current_backend_volume = 0.8;
 
 static waveform current_waveform_type = GUI_SINE; //DEFAULT TO SINE
@@ -20,7 +20,7 @@ void init_audio_backend(SynthContext *ctx) {
 void set_synth_frequency(double freq) {
     if (freq < 20.0) freq = 20.0; // Min frequency
     if (freq > 20000.0) freq = 20000.0; // Max frequency (increased range for keyboard)
-    current_backend_frequency = freq;
+    //current_backend_frequency = freq;
     
     // Update the actual audio backend
     if (global_synth_ctx) {
@@ -91,9 +91,9 @@ void start_synth_note(double freq, double vol) {
 }
 
 
-double get_current_frequency() {
-    return current_backend_frequency;
-}
+// double get_current_frequency() {
+//     return current_backend_frequency;
+// }
 
 double get_current_volume() {
     return current_backend_volume;

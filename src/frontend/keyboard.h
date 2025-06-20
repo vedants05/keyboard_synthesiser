@@ -17,15 +17,13 @@ extern const float BLACK_KEY_HEIGHT; // Black keys are shorter
 typedef struct {
     SDL_FRect rect;
     int midi_note; //Note number to identify a key
-    double frequency;
-    int is_black_key;
+    int is_black_key; 
     int is_pressed;
-    SDL_Scancode scancode;
+    SDL_Scancode scancode; //For physical keyboard input
 } PianoKey;
 
 
 double midi_to_frequency(int midi_note);
-int is_black(int offset_in_octave);
 void init_keyboard(float start_x, float start_y);
 void handle_key_press(int mouse_x, int mouse_y);
 void handle_key_release(int mouse_x, int mouse_y);

@@ -6,8 +6,11 @@
 
 // Global flag to indicate if a note is currently playing (for monophonic backend)
 static int note_is_playing = 0;
+
 // Global octave offset (can be changed with [ and ] keys)
 static int octave_offset = 0;
+
+//Key dimensions
 const float WHITE_KEY_WIDTH = 80.0f;
 const float WHITE_KEY_HEIGHT = 240.0f;
 const float BLACK_KEY_WIDTH = 48.0f;
@@ -26,16 +29,11 @@ const SDL_Scancode black_key_scancodes[NUM_BLACK_KEYS] = {
     SDL_SCANCODE_E, SDL_SCANCODE_T, SDL_SCANCODE_Y, SDL_SCANCODE_I, SDL_SCANCODE_O
 };
 
-// Function to calculate frequency from MIDI note number  - Is this required??
+// Function to calculate frequency from MIDI note number 
 double midi_to_frequency(int midi_note) {
     return 440.0 * pow(2.0, (double)(midi_note - 69) / 12.0);
 }
 
-
-int is_black(int offset_in_octave) {
-        return (offset_in_octave == 1 || offset_in_octave == 3 ||
-                offset_in_octave == 6 || offset_in_octave == 8 || offset_in_octave == 10);
-}
 
 // Initialize the keyboard - takes in top left coordinates for the keyboard
 void init_keyboard(float start_x, float start_y) {
@@ -54,7 +52,6 @@ void init_keyboard(float start_x, float start_y) {
     
     for (int i = 0; i < NUM_WHITE_KEYS; i++) { 
         keys[key_index].midi_note = white_key_midi_notes[i];
-        keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
         keys[key_index].is_black_key = 0;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){white_key_pos_x, start_y, WHITE_KEY_WIDTH, WHITE_KEY_HEIGHT};
@@ -70,7 +67,6 @@ void init_keyboard(float start_x, float start_y) {
 
     for (int i = 0; i < NUM_BLACK_KEYS; i++) {
         keys[key_index].midi_note = black_key_midi_notes[i];
-        keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
         keys[key_index].is_black_key = 1;
         keys[key_index].is_pressed = 0;
         keys[key_index].rect = (SDL_FRect){start_x + black_key_offset_x[i] * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2,
@@ -81,42 +77,47 @@ void init_keyboard(float start_x, float start_y) {
     }
 }
 
+//When a key from the physical keyboard is pressed
 void handle_physical_key_down(SDL_Scancode scancode) {
-    // If a note is already playing, stop it first (monophonic behavior)
+
+    // Stopping a not that is already playing
     if (note_is_playing) {
         stop_synth_note();
         note_is_playing = 0;
-        // Also un-press any key that was held down
+
+        // Reset is_pressed flag for all keys 
         for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
             keys[i].is_pressed = 0;
         }
     }
 
-    // Find the key that corresponds to the pressed scancode
     for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
         if (keys[i].scancode == scancode) {
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
+
                 // Apply octave offset to the frequency
                 int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+
                 // Clamp to valid MIDI range (0-127)
                 if (adjusted_midi < 0) adjusted_midi = 0;
                 if (adjusted_midi > 127) adjusted_midi = 127;
+
+                //Calculate frequency from midi value and pass into backend functions
                 double adjusted_frequency = midi_to_frequency(adjusted_midi);
                 start_synth_note(adjusted_frequency, get_current_volume());
                 note_is_playing = 1;
             }
-            return; // Found our key, no need to check others
+            return; 
         }
     }
 }
 
-// --- NEW: Handler for physical key up event ---
+//When key is released
 void handle_physical_key_up(SDL_Scancode scancode) {
-    // Find the key that corresponds to the released scancode
+
     for (int i = 0; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
         if (keys[i].scancode == scancode) {
-            // Only stop the note if this is the key that was playing
             if (keys[i].is_pressed) {
                 keys[i].is_pressed = 0;
                 if (note_is_playing) {
@@ -124,41 +125,58 @@ void handle_physical_key_up(SDL_Scancode scancode) {
                     note_is_playing = 0;
                 }
             }
-            return; // Found our key
+            return; 
         }
     }
 }
 
-// Function to handle key press
+//Handles key press on UI window
 void handle_key_press(int mouse_x, int mouse_y) {
-    // Create an SDL_Point from mouse coordinates (casting to int implicitly)
+    
+    // Mouse coordinates
     SDL_Point mouse_point = {mouse_x, mouse_y};
 
-    // Check black keys first, as they overlap white keys
-    for (int i = NUM_WHITE_KEYS; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; ++i) {
-        // Need to convert SDL_FRect to SDL_Rect for SDL_PointInRect
-        // This is a temporary conversion for the check, as SDL_PointInRect
-        // in your current headers seems to only take SDL_Rect.
+    for (int i = NUM_WHITE_KEYS; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; i++) {
+
+        //Check black keys first because they overlap white keys
+        //Get SDL_Rect of a key and compare it to mouse_point
         SDL_Rect key_rect_int = {(int)keys[i].rect.x, (int)keys[i].rect.y,
                                  (int)keys[i].rect.w, (int)keys[i].rect.h};
         if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
-                start_synth_note(keys[i].frequency, get_current_volume());
+                // Apply octave offset to the frequency
+                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+
+                // Clamp to valid MIDI range (0-127)
+                if (adjusted_midi < 0) adjusted_midi = 0;
+                if (adjusted_midi > 127) adjusted_midi = 127;
+
+                //Calculate frequency from midi value and pass into backend functions
+                double adjusted_frequency = midi_to_frequency(adjusted_midi);
+                start_synth_note(adjusted_frequency, get_current_volume());
                 note_is_playing = 1;
             }
             return;
         }
     }
 
-    // Then check white keys
-    for (int i = 0; i < NUM_WHITE_KEYS; ++i) {
+    for (int i = 0; i < NUM_WHITE_KEYS; i++) {
         SDL_Rect key_rect_int = {(int)keys[i].rect.x, (int)keys[i].rect.y,
                                  (int)keys[i].rect.w, (int)keys[i].rect.h};
         if (SDL_PointInRect(&mouse_point, &key_rect_int)) { // Use SDL_PointInRect
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
-                start_synth_note(keys[i].frequency, get_current_volume());
+                                // Apply octave offset to the frequency
+                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+
+                // Clamp to valid MIDI range (0-127)
+                if (adjusted_midi < 0) adjusted_midi = 0;
+                if (adjusted_midi > 127) adjusted_midi = 127;
+
+                //Calculate frequency from midi value and pass into backend functions
+                double adjusted_frequency = midi_to_frequency(adjusted_midi);
+                start_synth_note(adjusted_frequency, get_current_volume());
                 note_is_playing = 1;
             }
             return;
@@ -213,7 +231,7 @@ void draw_keyboard(SDL_Renderer *renderer) {
         }
     }
 
-    // Draw black keys second (so they appear on top)
+    // Draw black keys second - so they appear on top
     for (int i = NUM_WHITE_KEYS; i < NUM_WHITE_KEYS + NUM_BLACK_KEYS; ++i) {
         if (keys[i].is_black_key) { // Ensure it's a black key
             if (keys[i].is_pressed) {

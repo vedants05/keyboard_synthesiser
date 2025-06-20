@@ -25,6 +25,7 @@ set(SHARED_SOURCES_2
         src/frontend/keyboard.c
         src/frontend/slider.c
         src/frontend/utils.c
+        src/frontend/initialise.c
 )
 
 add_executable(synth 

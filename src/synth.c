@@ -16,17 +16,17 @@ Rest of the controls are in the GUI
 #include "synth.h"
 #include "run.h"
 
-int main(void) {
-    printf("Starting Integrated Synth with GUI...\n");
+// int launch_synth_gui(void) {
+//     printf("Starting Integrated Synth with GUI...\n");
     
-    // Use the GUI main function which now includes audio backend
-    int result = gui_main(0, NULL);
+//     // Use the GUI main function which now includes audio backend
+//     int result = gui_main(0, NULL);
     
-    if (result != 0) {
-        printf("Program terminated with error\n");
-        return 1;
-    }
+//     if (result != 0) {
+//         printf("Program terminated with error\n");
+//         return 1;
+//     }
 
-    printf("Program terminated successfully\n");
-    return 0;
-}
+//     printf("Program terminated successfully\n");
+//     return 0;
+// }

@@ -1,152 +1,25 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+#include "run.h"
 #include <SDL3/SDL_main.h>
 #include "frontend/button.h"
 #include "frontend/slider.h"
 #include "frontend/keyboard.h"
-#include "run.h"
+#include "frontend/initialise.h"
 #include "frontend/utils.h"
 #include "backend/audio.h"
 #include "backend/utils.h"
 #include "backend/filters.h"
-#include <stdlib.h>
-
-int init_SDL(void){
-    // Initialize SDL with both video and audio
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-        fprintf(stderr, "could not initialize SDL3: %s\n", SDL_GetError());
-        return 1;
-    }
-    if (!TTF_Init()) {
-    SDL_Log("TTF_Init failed: %s", SDL_GetError());
-    return 1;
-    }
-    return 0;
-}
-
-int init_window(SDL_Window **window){
-    // --- Window and Renderer Setup ---
-    *window = SDL_CreateWindow(
-        "Synth34",
-        900, // Width to accommodate keyboard
-        600, // Height
-        SDL_WINDOW_RESIZABLE
-    );
-    if (window == NULL) {
-        fprintf(stderr, "could not create window: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-    return 0;
-}
-
-int init_renderer(SDL_Window *window, SDL_Renderer **renderer){
-    *renderer = SDL_CreateRenderer(window, NULL);
-    if (*renderer == NULL) {
-        fprintf(stderr, "could not create renderer: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-    return 0;
-}
-
-void cleanup(SDL_Window *window, SDL_Renderer *renderer){
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void add_sliders(Slider *filter_slider){
-    // Filter Cutoff Slider (100Hz to 20000Hz)
-    init_slider(filter_slider, 800.0f, 100.0f, 30.0f, 400.0f,
-                100.0f, 20000.0f, 2000.0f, "Filter Cutoff",
-                NULL); // We'll handle this manually in the event loop
-
-    // // Volume Slider (0.0 to 1.0)
-    // init_slider(vol_slider, 800.0f, 100.0f, 20.0f, 300.0f,
-    //             0.0f, 1.0f, get_current_volume(), "Volume",
-    //             (void (*)(float))set_synth_volume);
-
-}
-
-void add_buttons(Button *button_list) {
-    Button sine = { {50.0f, 100.0f, 100.0f, 40.0f}, "Sine", 0, NULL };
-    Button square = { {160.0f, 100.0f, 100.0f, 40.0f}, "Square", 0, NULL };
-    Button saw = { {270.0f, 100.0f, 100.0f, 40.0f}, "Saw", 0, NULL };
-    Button no_filter = { {50.0f, 150.0f, 100.0f, 40.0f}, "No filter", 0, NULL };
-    Button low_filter = { {160.0f, 150.0f, 100.0f, 40.0f}, "Low filter", 0, NULL };
-    Button high_filter = { {270.0f, 150.0f, 100.0f, 40.0f}, "High filter", 0, NULL };
-
-    button_list[0] = sine;
-    button_list[1] = square;
-    button_list[2] = saw;
-    button_list[3] = no_filter;
-    button_list[4] = low_filter;
-    button_list[5] = high_filter;
-}
-
-void add_GUI_elements(Slider *filter_slider, Button *button_list){
-    // Adding Sliders 
-    add_sliders(filter_slider);
-    
-    // Adding buttons
-    add_buttons(button_list);
-
-    // Set initial waveform button state 
-    if (get_current_waveform_type() == GUI_SINE) {
-        button_list[0].is_selected = 1;
-        button_list[1].is_selected  = 0;
-        button_list[2].is_selected  = 0;
-    } else if (get_current_waveform_type() == GUI_SQUARE) {
-        button_list[0].is_selected = 0;
-        button_list[1].is_selected  = 1;
-        button_list[2].is_selected  = 0;
-    } else {
-        button_list[0].is_selected = 0;
-        button_list[1].is_selected  = 0;
-        button_list[2].is_selected  = 1;
-    }
-
-    // Set initial filter type button state 
-    if (get_current_filter_type() == GUI_NO_FILTER) {
-        button_list[3].is_selected = 1;
-        button_list[4].is_selected  = 0;
-        button_list[5].is_selected  = 0;
-    } else if (get_current_filter_type() == GUI_LOW_FILTER) {
-        button_list[3].is_selected = 0;
-        button_list[4].is_selected  = 1;
-        button_list[5].is_selected  = 0;
-    } else {
-        button_list[3].is_selected = 0;
-        button_list[4].is_selected  = 0;
-        button_list[5].is_selected  = 1;
-    }
-
-    // Initialize the keyboard (placed below other controls)
-    init_keyboard(50.0f, 260.0f); // X, Y position for keyboard start
-}
 
 void run(SDL_Renderer *renderer, SynthContext *ctx){
     Slider filter_slider;
-    Button sine_button;
-    Button square_button;
-    Button saw_button;
-    Button no_filter_button;
-    Button low_filter_button;
-    Button high_filter_button;
 
     TTF_Font *font = TTF_OpenFont("../src/frontend/fonts/arial.ttf", 20);
-
 
     //Creating a button list
     Button buttons[NO_OF_BUTTONS];
 
-    buttons[0] = sine_button;
-    buttons[1] = square_button;
-    buttons[2] = saw_button;
-    buttons[3] = no_filter_button;
-    buttons[4] = low_filter_button;
-    buttons[5] = high_filter_button;
 
     add_GUI_elements(&filter_slider, buttons);
 
@@ -304,7 +177,6 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                         }
                     }
 
-
                     // Handle keyboard presses (if not dragging a slider)
                     if (!filter_slider.is_dragging ) {
                         handle_key_press(e.button.x, e.button.y); // mouse_x, mouse_y are ints already
@@ -351,7 +223,7 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
 }
 
 
-int gui_main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
 
