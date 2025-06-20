@@ -60,6 +60,45 @@ void update_slider_from_mouse(Slider *slider, int mouse_y) {
     }
 }
 
+void update_slider_from_key(Slider *slider, int key_direction, float step_size) {
+    // key_direction: 1 for UP, -1 for DOWN
+
+    float handle_y_min = slider->track_rect.y;
+    float handle_y_max = slider->track_rect.y + slider->track_rect.h - slider->handle_rect.h;
+
+    // Calculate the new potential handle position
+    float new_handle_y = slider->handle_rect.y + (key_direction * step_size);
+
+    // Clamp the new handle position within the slider's bounds
+    if (new_handle_y < handle_y_min) {
+        new_handle_y = handle_y_min;
+    } else if (new_handle_y > handle_y_max) {
+        new_handle_y = handle_y_max;
+    }
+
+    // Update the handle's position only if it actually changed
+    if (new_handle_y != slider->handle_rect.y) {
+        slider->handle_rect.y = new_handle_y;
+
+        // Convert handle's current y position to the value relative to slider value between 0 and 1
+        float normalized_pos;
+        if (handle_y_max - handle_y_min == 0) { // Avoid division by zero for a track of height 0
+            normalized_pos = 0.0f;
+        } else {
+            normalized_pos = 1.0f - ((slider->handle_rect.y - handle_y_min) / (handle_y_max - handle_y_min));
+        }
+        slider->value = normalized_pos; // Normalized 0.0-1.0
+
+        // Actual value relative to actual numbers for the slider
+        float actual_value = slider->min_val + normalized_pos * (slider->max_val - slider->min_val);
+
+        // If a callback function was assigned to the slider, pass in the updated value
+        if (slider->on_value_changed) {
+            slider->on_value_changed(actual_value);
+        }
+    }
+}
+
 // Render a slider
 void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider) {
     // Draw track (grey)

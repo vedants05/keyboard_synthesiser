@@ -21,6 +21,8 @@ void init_slider(Slider *slider, float x, float y, float width, float height,
          
 void update_slider_from_mouse(Slider *slider, int mouse_y);
 
+void update_slider_from_key(Slider *slider, int key_direction, float step_size);
+
 void draw_slider(SDL_Renderer *renderer, TTF_Font *font, Slider *slider);
 
 void add_sliders(Slider *filter_slider);
