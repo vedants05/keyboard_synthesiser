@@ -35,4 +35,8 @@ void draw_keyboard(SDL_Renderer *renderer);
 void handle_physical_key_up(SDL_Scancode scancode);
 void handle_physical_key_down(SDL_Scancode scancode);
 
+// Octave control functions
+void change_octave_up();
+void change_octave_down();
+
 #endif

@@ -6,6 +6,8 @@
 
 // Global flag to indicate if a note is currently playing (for monophonic backend)
 static int note_is_playing = 0;
+// Global octave offset (can be changed with [ and ] keys)
+static int octave_offset = 0;
 const float WHITE_KEY_WIDTH = 80.0f;
 const float WHITE_KEY_HEIGHT = 240.0f;
 const float BLACK_KEY_WIDTH = 48.0f;
@@ -40,24 +42,18 @@ void init_keyboard(float start_x, float start_y) {
     int key_index = 0; //Tracks keys array for the key structs that are being initialised
     float current_x = start_x;
 
-    // Define the pattern for white and black keys in one octave (C to C)
     // C, C#, D, D#, E, F, F#, G, G#, A, A#, B
     int white_key_midi_offsets[] = {0, 2, 4, 5, 7, 9, 11}; // C, D, E, F, G, A, B (octave)
     int black_key_midi_offsets[] = {1, 3, -1, 6, 8, 10}; // C#, D#, F#, G#, A# (-1 for gaps)
-
-    // Helper to identify white/black key at a logical index (0=C, 1=C#, etc.)
     
+    // A3 = MIDI 57, B3 = 59, C4 = 60, D4 = 62, E4 = 64, F4 = 65, G4 = 67
+    // A#3 = 58, C#4 = 61, D#4 = 63, F#4 = 66, G#4 = 68
 
-    // Generate keys for one octave (C4 to B4/C5) for simplicity
-    // C4 = MIDI 60, D4 = 62, E4 = 64, F4 = 65, G4 = 67, A4 = 69, B4 = 71
-    // C#4 = 61, D#4 = 63, F#4 = 66, G#4 = 68, A#4 = 70
-
-    // First, initialize white keys
     float white_key_pos_x = start_x;
-
+    int white_key_midi_notes[] = {57, 59, 60, 62, 64, 65, 67, 69}; // A3, B3, C4, D4, E4, F4, G4, A4
     
-    for (int i = 0; i < NUM_WHITE_KEYS; i++) { // C to C (8 keys)
-        keys[key_index].midi_note = START_MIDI_NOTE_C4 + white_key_midi_offsets[i];
+    for (int i = 0; i < NUM_WHITE_KEYS; i++) { 
+        keys[key_index].midi_note = white_key_midi_notes[i];
         keys[key_index].frequency = midi_to_frequency(keys[key_index].midi_note);
         keys[key_index].is_black_key = 0;
         keys[key_index].is_pressed = 0;
@@ -70,7 +66,7 @@ void init_keyboard(float start_x, float start_y) {
 
     key_index = NUM_WHITE_KEYS; // Start adding black keys after white keys
     float black_key_offset_x[] = {1.0f, 3.0f, 4.0f, 6.0f, 7.0f}; // Offsets from start of white key
-    int black_key_midi_notes[] = {61, 63, 66, 68, 70}; // C#4, D#4, F#4, G#4, A#4
+    int black_key_midi_notes[] = {58, 61, 63, 66, 68}; // A#3, C#4, D#4, F#4, G#4
 
     for (int i = 0; i < NUM_BLACK_KEYS; i++) {
         keys[key_index].midi_note = black_key_midi_notes[i];
@@ -101,7 +97,13 @@ void handle_physical_key_down(SDL_Scancode scancode) {
         if (keys[i].scancode == scancode) {
             if (!keys[i].is_pressed) {
                 keys[i].is_pressed = 1;
-                start_synth_note(keys[i].frequency, get_current_volume());
+                // Apply octave offset to the frequency
+                int adjusted_midi = keys[i].midi_note + (octave_offset * 12);
+                // Clamp to valid MIDI range (0-127)
+                if (adjusted_midi < 0) adjusted_midi = 0;
+                if (adjusted_midi > 127) adjusted_midi = 127;
+                double adjusted_frequency = midi_to_frequency(adjusted_midi);
+                start_synth_note(adjusted_frequency, get_current_volume());
                 note_is_playing = 1;
             }
             return; // Found our key, no need to check others
@@ -180,6 +182,21 @@ void handle_key_release(int mouse_x, int mouse_y) {
     }
 }
 
+// Functions to change octave
+void change_octave_up() {
+    if (octave_offset < 3) { // Limit to a range
+        octave_offset++;
+        printf("Octave up: %+d\n", octave_offset);
+    }
+}
+
+void change_octave_down() {
+    if (octave_offset > -3) { // Limit to a range
+        octave_offset--;
+        printf("Octave down: %+d\n", octave_offset);
+    }
+}
+
 // Draw the keyboard
 void draw_keyboard(SDL_Renderer *renderer) {
     // Draw white keys first
@@ -210,4 +227,3 @@ void draw_keyboard(SDL_Renderer *renderer) {
         }
     }
 }
-
