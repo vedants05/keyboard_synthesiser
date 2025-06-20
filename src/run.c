@@ -12,6 +12,7 @@
 #include "backend/utils.h"
 #include "backend/filters.h"
 
+
 void run(SDL_Renderer *renderer, SynthContext *ctx){
     Slider filter_slider;
 
@@ -87,20 +88,29 @@ void run(SDL_Renderer *renderer, SynthContext *ctx){
                     }
                     case SDLK_UP:
                         if (ctx && ctx->filter) {
+                            float scale = 500/(20000 - 100);
+                            float step_size_pixels = filter_slider.track_rect.h * 0.025f;
+                            update_slider_from_key(&filter_slider, -1, step_size_pixels);
                             set_filter_cutoff(ctx->filter, ctx->filter->cutoff + 500.0f);
                             printf("Filter cutoff increased to %.1f Hz\n", ctx->filter->cutoff);
                         }
                         break;
                     case SDLK_DOWN:
                         if (ctx && ctx->filter && ctx->filter->cutoff > 500.0f) {
+                            float step_size_pixels = filter_slider.track_rect.h * 0.025f;
+                            update_slider_from_key(&filter_slider, 1, step_size_pixels);
                             set_filter_cutoff(ctx->filter, ctx->filter->cutoff - 500.0f);
                             printf("Filter cutoff decreased to %.1f Hz\n", ctx->filter->cutoff);
                         }
                         break;
-                    case SDLK_LEFTBRACKET:
+                    case SDLK_LEFT:
+                        buttons[6].is_selected = 1;
+                        buttons[7].is_selected = 0;
                         change_octave_down();
                         break;
-                    case SDLK_RIGHTBRACKET:
+                    case SDLK_RIGHT:
+                        buttons[6].is_selected = 0;
+                        buttons[7].is_selected = 1;
                         change_octave_up();
                         break;
                     default:
